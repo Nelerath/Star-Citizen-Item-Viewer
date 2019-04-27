@@ -6,73 +6,24 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer
 {
     public partial class Form1 : Form
     {
         public static string FilePath = Directory.GetCurrentDirectory();
-        public static Column[] WeaponColumns =
-        {
-            new Column("Name", "Name", false),
-            new Column("Size", "Size", false),
-            new Column("Alpha Damage", "DamageTotal", true, true),
-            new Column("Damage Per Second", "DamagePerSecond", true, true, "N2"),
-            new Column("Firerate", "Firerate", true, true, "N2"),
-            new Column("Biochemical Damage", "DamageBiochemical", true, true),
-            new Column("Distortion Damage", "DamageDistortion", true, true),
-            new Column("Energy Damage", "DamageEnergy", true, true),
-            new Column("Physical Damage", "DamagePhysical", true, true),
-            new Column("Thermal Damage", "DamageThermal", true, true),
-            new Column("Damage Per Power", "DamagePerPower", true, true, "N2"),
-            new Column("Damage Per Heat", "DamagePerHeat", true, true, "N2"),
-            new Column("Power Per Shot", "PowerPerShot", true, false),
-            new Column("Heat Per Shot", "HeatPerShot", true, false),
-            new Column("Heat Per Second", "HeatPerSecond", true, false, "N2"),
-            new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
-            new Column("Projectile Velocity", "Speed", true, true),
-            new Column("Max Range", "MaxRange", true, true),
-            new Column("Max Spread", "MaxSpread", true, false, "N3"),
-            new Column("Initial Spread", "InitialSpread", true, false, "N3"),
-            new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
-            new Column("Spread Decay", "SpreadDecay", true, true, "N3"),
-            new Column("Spread Per Second", "SpreadPerSecond", true, false, "N3"),
-            new Column("Time Until Max Spread", "TimeUntilMaxSpread", true, true, "N3"),
-            new Column("Score", null, true, true, "N2", false),
-        };
-        public static Column[] GunColumns =
-                {
-            new Column("Name", "Name", false),
-            new Column("Total Damage", "DamageTotal", true, true),
-            new Column("Singleshot Firerate", "SingleFirerate", true, true, "N2"),
-            new Column("Burst Firerate", "BurstFirerate", true, true, "N2"),
-            new Column("Auto Firerate", "RapidFirerate", true, true, "N2"),
-            new Column("Biochemical Damage", "DamageBiochemical", true, true),
-            new Column("Distortion Damage", "DamageDistortion", true, true),
-            new Column("Energy Damage", "DamageEnergy", true, true),
-            new Column("Physical Damage", "DamagePhysical", true, true),
-            new Column("Thermal Damage", "DamageThermal", true, true),
-            //new Column("Damage Per Power", "DamagePerPower", true, true, "N2"),
-            //new Column("Damage Per Heat", "DamagePerHeat", true, true, "N2"),
-            //new Column("Power Per Shot", "PowerPerShot", true, false),
-            //new Column("Heat Per Shot", "HeatPerShot", true, false),
-            //new Column("Heat Per Second", "HeatPerSecond", true, false, "N2"),
-            //new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
-            new Column("Projectile Velocity", "Speed", true, true),
-            new Column("Max Range", "MaxRange", true, true),
-            //new Column("Max Spread", "MaxSpread", true, false, "N3"),
-            //new Column("Initial Spread", "InitialSpread", true, false, "N3"),
-            //new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
-            //new Column("Spread Decay", "SpreadDecay", true, true, "N3"),
-            //new Column("Spread Per Second", "SpreadPerSecond", true, false, "N3"),
-            //new Column("Time Until Max Spread", "TimeUntilMaxSpread", true, true, "N3"),
-            new Column("Score", null, true, true, "N2", false),
-        };
 
         public static Dictionary<string, object> MasterData = new Dictionary<string, object>();
         private static string LastSelection = "";
         private static string Selected = "Weapons";
+
+        private static List<string[]> Downloads = Weapon.GetDownloadInfo(FilePath);
+
+        private static List<object> Data = new List<object>();
+        private static Column[] Columns = Weapon.GetColumns();
 
         public Form1()
         {
@@ -95,8 +46,8 @@ namespace Star_Citizen_Item_Viewer
                 Directory.CreateDirectory(FilePath + "\\shields");
             if (!Directory.Exists(FilePath + "\\guns"))
                 Directory.CreateDirectory(FilePath + "\\guns");
-            if (!Directory.Exists(FilePath + "\\magazines"))
-                Directory.CreateDirectory(FilePath + "\\magazines");
+            if (!Directory.Exists(FilePath + "\\attachments"))
+                Directory.CreateDirectory(FilePath + "\\attachments");
             if (!Directory.Exists(FilePath + "\\ammo"))
                 Directory.CreateDirectory(FilePath + "\\ammo");
         }
@@ -111,66 +62,90 @@ namespace Star_Citizen_Item_Viewer
         {
             Selected = (string)listBox1.SelectedItem;
             label1.Text = Selected;
-            Refresh();
+            if (Selected != LastSelection)
+                Refresh();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            List<string[]> downloads = new List<string[]>
-            {
-                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", FilePath + "\\weapons" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/WeaponPersonal", FilePath + "\\guns" }
-                ,new string[] { "http://starcitizendb.com/api/ammo/energy", FilePath + "\\ammo" }
-                ,new string[] { "http://starcitizendb.com/api/ammo/projectile", FilePath + "\\ammo" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/WeaponAttachment", FilePath + "\\attachments" }
-                //,new string[] {"http://starcitizendb.com/api/components/df/PowerPlant", FilePath + "\\power plants"}
-                //,new string[] {"http://starcitizendb.com/api/components/df/Cooler", FilePath + "\\coolers"}
-                //,new string[] {"http://starcitizendb.com/api/components/df/Shield", FilePath + "\\shields"}
-            };
             progressBar1.Value = 0;
-            progressBar1.Step = 100 / downloads.Count;
+            progressBar1.Step = 100 / Downloads.Count;
             progressBar1.Visible = true;
 
-            foreach (string[] download in downloads)
+            bool displayGrid = DisplayGrid.Enabled;
+            DisplayGrid.Enabled = false;
+            weaponsSelect.Enabled = false;
+            button1.Enabled = false;
+            
+
+            Task.Run(() =>
             {
-                downloadEverything(download[0], download[1]);
-                progressBar1.PerformStep();
-            }
-            progressBar1.Visible = false;
+                List<Task> tasks = new List<Task>();
+                foreach (string[] download in Downloads)
+                {
+                    tasks.Add(Task.Run(() => DownloadEverything(download[0], download[1])));
+                }
+                Task.WaitAll(tasks.ToArray());
+                MethodInvoker d = delegate () 
+                {
+                    Refresh();
+                    progressBar1.Visible = false;
+                    DisplayGrid.Enabled = displayGrid;
+                    weaponsSelect.Enabled = true;
+                    button1.Enabled = true;
+                };
+                this.BeginInvoke(d);
+            });
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void DisplayGrid_Click(object sender, EventArgs e)
         {
-            dataGridView1.Rows.Clear();
-            List<object> data = new List<object>();
-            Column[] columns;
+            DamageComparison view = new DamageComparison(Data);
+            view.ShowDialog();
+        }
 
-            switch (Selected)
+        private void weaponsSelect_AfterCheck(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Checked)
             {
-                case "Weapons":
-                    columns = WeaponColumns;
-                    break;
-                case "Guns":
-                    columns = GunColumns;
-                    break;
-                default: columns = WeaponColumns; break;
-            }
-
-            foreach (TreeNode group in weaponsSelect.Nodes)
-            {
-                foreach (TreeNode node in group.Nodes)
+                if (e.Node.Nodes.Count > 0)
                 {
-                    if (node.Checked || group.Checked)
-                        data.Add(MasterData[node.Name]);
+                    foreach (TreeNode node in e.Node.Nodes)
+                    {
+                        node.Checked = true;
+                    }
+                }
+                else
+                {
+                    Data.Add(MasterData[e.Node.Name]);
+                    AddRow(MasterData[e.Node.Name]);
+                }
+            }
+            else
+            {
+                if (e.Node.Nodes.Count > 0)
+                {
+                    foreach (TreeNode node in e.Node.Nodes)
+                    {
+                        node.Checked = false;
+                    }
+                }
+                else
+                {
+                    Data.RemoveAll(x => x == MasterData[e.Node.Name]);
+                    RemoveRow(e.Node.Name);
                 }
             }
 
-            DataFill(data, columns);
+            if (Data.Count > 1)
+                Recolor();
 
             dataGridView1.Columns[dataGridView1.Columns.IndexOf("Name")].Frozen = true;
             dataGridView1.AutoResizeColumns();
-            LastSelection = Selected;
         }
+
+
+
 
 
         private void Refresh()
@@ -180,15 +155,23 @@ namespace Star_Citizen_Item_Viewer
             {
                 case "Weapons":
                     MasterData = Weapon.parseAll(FilePath + "\\weapons");
+                    Columns = Weapon.GetColumns();
+                    Downloads = Weapon.GetDownloadInfo(FilePath);
+                    DisplayGrid.Enabled = true;
                     break;
                 case "Power Plants":
                     MasterData = new Dictionary<string, object>();
+                    DisplayGrid.Enabled = false;
                     break;
                 case "Coolers":
                     MasterData = new Dictionary<string, object>();
+                    DisplayGrid.Enabled = false;
                     break;
                 case "Guns":
                     MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
+                    Columns = Gun.GetColumns();
+                    Downloads = Gun.GetDownloadInfo(FilePath);
+                    DisplayGrid.Enabled = false;
                     break;
             }
             Dictionary<int, TreeNode> sizes = new Dictionary<int, TreeNode>();
@@ -207,55 +190,73 @@ namespace Star_Citizen_Item_Viewer
             {
                 weaponsSelect.Nodes.Add(sizes[key]);
             }
+
+            dataGridView1.Columns.Clear();
+            for (int i = 0; i < Columns.Length; i++)
+            {
+                dataGridView1.Columns.Add(Columns[i].Name, Columns[i].Name);
+                dataGridView1.Columns[i].ReadOnly = true;
+                dataGridView1.Columns[i].DefaultCellStyle.Format = Columns[i].Format;
+                dataGridView1.Columns[i].Visible = Columns[i].Visible;
+            }
         }
 
-        private void downloadEverything(string Url, string FilePath)
+        private void DownloadEverything(string Url, string FilePath)
         {
             if (!Directory.Exists(FilePath)) Directory.CreateDirectory(FilePath);
+
+            string rawUrls;
             using (WebClient web = new WebClient())
             {
-                string rawUrls = web.DownloadString(Url);
-                foreach (var item in rawUrls.Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries))
+                rawUrls = web.DownloadString(Url);
+            }
+
+            Parallel.ForEach(rawUrls.Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries), new ParallelOptions { MaxDegreeOfParallelism = 5 }, item =>
+            {
+                using (WebClient web = new WebClient())
                 {
                     int i = item.IndexOf("href=\"") + 6;
                     string url = item.Substring(i, item.IndexOf('"', i + 1) - i);
-                    string json = web.DownloadString("http://starcitizendb.com"+url);
-                    using (StreamWriter writer = File.CreateText(FilePath+"\\"+url.Split(new char[] { '/' }).Last()))
+                    string json = web.DownloadString("http://starcitizendb.com" + url);
+                    using (StreamWriter writer = File.CreateText(FilePath + "\\" + url.Split(new char[] { '/' }).Last()))
                     {
                         writer.Write(json);
                     }
                 }
-            }
-            Refresh();
+            });
+            MethodInvoker d = delegate () { progressBar1.PerformStep(); };
+            this.BeginInvoke(d);
+
+            //List<Task> tasks = new List<Task>();
+            //foreach (var item in rawUrls.Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries))
+            //{
+            //    tasks.Add(Task.Run(() =>
+            //    {
+            //        using (WebClient web = new WebClient())
+            //        {
+            //            int i = item.IndexOf("href=\"") + 6;
+            //            string url = item.Substring(i, item.IndexOf('"', i + 1) - i);
+            //            string json = web.DownloadString("http://starcitizendb.com" + url);
+            //            using (StreamWriter writer = File.CreateText(FilePath + "\\" + url.Split(new char[] { '/' }).Last()))
+            //            {
+            //                writer.Write(json);
+            //            }
+            //        }
+            //
+            //    }));
+            //}
+            //Task.WaitAll(tasks.ToArray());
         }
 
-        private void DataFill(List<object> Data, Column[] Columns)
+        private void AddRow(object data)
         {
-            if (Selected != LastSelection)
-            {
-                dataGridView1.Columns.Clear();
-                for (int i = 0; i < Columns.Length; i++)
-                {
-                    dataGridView1.Columns.Add(Columns[i].Name, Columns[i].Name);
-                    dataGridView1.Columns[i].ReadOnly = true;
-                    dataGridView1.Columns[i].DefaultCellStyle.Format = Columns[i].Format;
-                    dataGridView1.Columns[i].Visible = Columns[i].Visible;
-                }
-            }
-
+            dataGridView1.Rows.Add();
+            DataGridViewRow dataRow = new DataGridViewRow();
+            dataRow = dataGridView1.Rows[dataGridView1.Rows.Count - 1];
+            dataRow.ReadOnly = true;
+            decimal score = 0M;
             int scoreColumn = dataGridView1.Columns.IndexOf("Score");
 
-            for (int i = 0; i < Data.Count; i++)
-            {
-                dataGridView1.Rows.Add();
-                dataGridView1.Rows[i].ReadOnly = true;
-                foreach (var col in Columns)
-                {
-                    dataGridView1.Rows[i].Cells[dataGridView1.Columns.IndexOf(col.Name)].Value = Data[i].Get(col.DataName);
-                }
-            }
-
-            bool colorCode = Data.Count > 1;
             Dictionary<string, decimal> scoreMultipliers = new Dictionary<string, decimal>();
             scoreMultipliers.DefaultIfEmpty(new KeyValuePair<string, decimal>("default", 0));
             if (richTextBox1.Text.Length > 0)
@@ -268,26 +269,51 @@ namespace Star_Citizen_Item_Viewer
                 dataGridView1.Columns[scoreColumn].Visible = true;
             }
 
+
+            foreach (var col in Columns)
+            {
+                int x = dataGridView1.Columns.IndexOf(col.Name);
+                dataRow.Cells[x].Value = data.Get(col.DataName);
+                decimal scoreMultiplier;
+                if (scoreMultipliers.TryGetValue(col.Name.ToLower(), out scoreMultiplier))
+                {
+                    score += scoreMultiplier * Convert.ToDecimal(dataRow.Cells[dataGridView1.Columns.IndexOf(col.Name)].Value);
+                }
+            }
+            dataRow.Cells[scoreColumn].Value = score;
+
+            //dataGridView1.Rows.Add(dataRow);
+        }
+
+        private void RemoveRow(string Name)
+        {
+            int x = dataGridView1.Rows.Count;
+            for (int i = 0; i < x; i++)
+            {
+                if (dataGridView1.Rows[i].Cells[dataGridView1.Columns.IndexOf("Id")].Value.ToString() == Name)
+                {
+                    dataGridView1.Rows.RemoveAt(i);
+                    break;
+                }
+            }
+
+            Recolor();
+        }
+
+        private void Recolor()
+        {
             foreach (var col in Columns)
             {
                 int i = dataGridView1.Columns.IndexOf(col.Name);
                 List<object> values = new List<object>();
-                foreach (DataGridViewRow row in dataGridView1.Rows)
+
+                if (col.Sort)
                 {
-                    values.Add(row.Cells[i].Value);
-                    try
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        decimal scoreMultiplier;
-                        scoreMultipliers.TryGetValue(col.Name.ToLower(), out scoreMultiplier);
-                        row.Cells[scoreColumn].Value = Convert.ToDecimal(row.Cells[scoreColumn].Value) + Convert.ToDecimal(row.Cells[i].Value) * scoreMultiplier;
-                    }
-                    catch (Exception ex)
-                    {
+                        values.Add(row.Cells[i].Value);
                     }
 
-                }
-                if (colorCode && col.Sort)
-                {
                     values = values.Distinct().OrderBy(x => Convert.ToDecimal(x)).ToList();
                     foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
@@ -306,17 +332,16 @@ namespace Star_Citizen_Item_Viewer
 
             for (int x = 0; x < i; x++)
             {
-                if ((float)x / (float)l < .5)
-                    r = r + increment > 255 ? 255 : r + increment;
-                else
+                r = r + increment > 255 ? 255 : r + increment;
+                if (r == 255)
                     g = g - increment < 0 ? 0 : g - increment;
             }
 
             if (invert)
                 return Color.FromArgb(g, r, 0);
             else
-                return Color.FromArgb(r,g,0);
-                
+                return Color.FromArgb(r, g, 0);
+
         }
     }
 

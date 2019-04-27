@@ -30,14 +30,14 @@
         {
             this.weaponsSelect = new System.Windows.Forms.TreeView();
             this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.DisplayGrid = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -55,26 +55,17 @@
             this.weaponsSelect.Name = "weaponsSelect";
             this.weaponsSelect.Size = new System.Drawing.Size(321, 351);
             this.weaponsSelect.TabIndex = 0;
+            this.weaponsSelect.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.weaponsSelect_AfterCheck);
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(229, 467);
+            this.button1.Location = new System.Drawing.Point(229, 484);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(104, 23);
             this.button1.TabIndex = 1;
             this.button1.Text = "Download Data";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(12, 398);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(211, 92);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Run";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // label1
             // 
@@ -109,12 +100,10 @@
             this.listBox1.FormattingEnabled = true;
             this.listBox1.Items.AddRange(new object[] {
             "Weapons",
-            "Power Plants",
-            "Coolers",
             "Guns"});
-            this.listBox1.Location = new System.Drawing.Point(251, 398);
+            this.listBox1.Location = new System.Drawing.Point(229, 398);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(69, 56);
+            this.listBox1.Size = new System.Drawing.Size(104, 82);
             this.listBox1.TabIndex = 7;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
@@ -127,9 +116,9 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.DisplayGrid);
             this.splitContainer1.Panel1.Controls.Add(this.label1);
             this.splitContainer1.Panel1.Controls.Add(this.weaponsSelect);
-            this.splitContainer1.Panel1.Controls.Add(this.button2);
             this.splitContainer1.Panel1.Controls.Add(this.listBox1);
             this.splitContainer1.Panel1.Controls.Add(this.button1);
             // 
@@ -140,6 +129,24 @@
             this.splitContainer1.Size = new System.Drawing.Size(1104, 510);
             this.splitContainer1.SplitterDistance = 343;
             this.splitContainer1.TabIndex = 8;
+            // 
+            // DisplayGrid
+            // 
+            this.DisplayGrid.Location = new System.Drawing.Point(12, 398);
+            this.DisplayGrid.Name = "DisplayGrid";
+            this.DisplayGrid.Size = new System.Drawing.Size(211, 109);
+            this.DisplayGrid.TabIndex = 8;
+            this.DisplayGrid.Text = "Display Grid";
+            this.DisplayGrid.UseVisualStyleBackColor = true;
+            this.DisplayGrid.Click += new System.EventHandler(this.DisplayGrid_Click);
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.progressBar1.Location = new System.Drawing.Point(0, 0);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(757, 510);
+            this.progressBar1.TabIndex = 8;
             // 
             // splitContainer2
             // 
@@ -159,14 +166,6 @@
             this.splitContainer2.Size = new System.Drawing.Size(1104, 539);
             this.splitContainer2.SplitterDistance = 510;
             this.splitContainer2.TabIndex = 9;
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.progressBar1.Location = new System.Drawing.Point(0, 0);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(757, 510);
-            this.progressBar1.TabIndex = 8;
             // 
             // Form1
             // 
@@ -195,7 +194,6 @@
 
         private System.Windows.Forms.TreeView weaponsSelect;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.RichTextBox richTextBox1;
@@ -203,6 +201,7 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Button DisplayGrid;
     }
 }
 

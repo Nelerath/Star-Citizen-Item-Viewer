@@ -11,7 +11,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         public List<Shield> Shields { get; set; }
 
         public int NumberOfPips { get; set; }
-        public int AlphaDamage { get; set; }
+        public decimal AlphaDamage { get; set; }
         public decimal DamagePerSecond { get; set; }
 
         public decimal PowerOutput { get; set; }

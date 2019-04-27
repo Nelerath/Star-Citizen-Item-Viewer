@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Star_Citizen_Item_Viewer.Classes
 {
@@ -41,12 +43,12 @@ namespace Star_Citizen_Item_Viewer.Classes
         // Ammo
         public decimal Lifetime { get; set; }
         public int Speed { get; set; }
-        public int DamageBiochemical {get;set;}
-        public int DamageDistortion { get; set; }
-        public int DamageEnergy { get; set; }
-        public int DamagePhysical { get; set; }
-        public int DamageThermal { get; set; }
-        public int DamageTotal {
+        public decimal DamageBiochemical {get;set;}
+        public decimal DamageDistortion { get; set; }
+        public decimal DamageEnergy { get; set; }
+        public decimal DamagePhysical { get; set; }
+        public decimal DamageThermal { get; set; }
+        public decimal DamageTotal {
             get
             {
                 return DamageBiochemical + DamageDistortion + DamageEnergy + DamagePhysical + DamageThermal;
@@ -109,16 +111,16 @@ namespace Star_Citizen_Item_Viewer.Classes
             Filename = File;
 
             Firerate = Json.Components.SCItemWeaponComponentParams.fire.fireRate / 60M;
-            HeatPerShot = Json.Components.SCItemWeaponComponentParams.fire.heatPerShot;
-            MaximumTemperature = Json.Components.EntityComponentHeatConnection.MaximumTemperature;
+            //HeatPerShot = Json.Components.SCItemWeaponComponentParams.fire.heatPerShot;
+            //MaximumTemperature = Json.Components.EntityComponentHeatConnection.MaximumTemperature;
 
             PowerBase = Json.Components.EntityComponentPowerConnection.PowerBase;
             PowerDraw = Json.Components.EntityComponentPowerConnection.PowerDraw;
 
-            MaxSpread = Json.Components.SCItemWeaponComponentParams.fire.projectileLaunchParams.spreadParams.max;
-            InitialSpread = Json.Components.SCItemWeaponComponentParams.fire.projectileLaunchParams.spreadParams.firstAttack;
-            SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fire.projectileLaunchParams.spreadParams.attack;
-            SpreadDecay = Json.Components.SCItemWeaponComponentParams.fire.projectileLaunchParams.spreadParams.decay;
+            MaxSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.max;
+            InitialSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.firstAttack;
+            SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.attack;
+            SpreadDecay = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.decay;
 
             Lifetime = Json.ammo.lifetime;
             Speed = Json.ammo.speed;
@@ -138,21 +140,62 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public static Dictionary<string,object> parseAll(string filePath)
         {
-            Dictionary<string, object> output = new Dictionary<string, object>();
-            foreach (var path in Directory.GetFiles(filePath))
+            ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
+            Parallel.ForEach(Directory.GetFiles(filePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
             {
                 try
                 {
                     string raw = File.ReadAllText(path).Replace("@", "");
                     dynamic json = JsonConvert.DeserializeObject(raw);
                     Weapon w = new Weapon(json, path.Replace(filePath + "\\", "").Replace(".json", ""));
-                    output.Add(w.Id, w);
+                    output.TryAdd(w.Id, w);
                 }
-                catch (Exception ex)
-                {
-                }
-            }
-            return output;
+                catch (Exception ex) { }
+            });
+            return new Dictionary<string, object>(output);
+        }
+
+        public static Column[] GetColumns()
+        {
+            return new Column[] {
+                new Column("Id", "Id", false, false, "", false),
+                new Column("Name", "Name", false),
+                new Column("Size", "Size", false),
+                new Column("Alpha Damage", "DamageTotal", true, true),
+                new Column("Damage Per Second", "DamagePerSecond", true, true, "N2"),
+                new Column("Firerate", "Firerate", true, true, "N2"),
+                new Column("Biochemical Damage", "DamageBiochemical", true, true),
+                new Column("Distortion Damage", "DamageDistortion", true, true),
+                new Column("Energy Damage", "DamageEnergy", true, true),
+                new Column("Physical Damage", "DamagePhysical", true, true),
+                new Column("Thermal Damage", "DamageThermal", true, true),
+                //new Column("Damage Per Power", "DamagePerPower", true, true, "N2"),
+                //new Column("Damage Per Heat", "DamagePerHeat", true, true, "N2"),
+                //new Column("Power Per Shot", "PowerPerShot", true, false),
+                //new Column("Heat Per Shot", "HeatPerShot", true, false),
+                //new Column("Heat Per Second", "HeatPerSecond", true, false, "N2"),
+                //new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
+                new Column("Projectile Velocity", "Speed", true, true),
+                new Column("Max Range", "MaxRange", true, true),
+                new Column("Max Spread", "MaxSpread", true, false, "N3"),
+                new Column("Initial Spread", "InitialSpread", true, false, "N3"),
+                new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
+                new Column("Spread Decay", "SpreadDecay", true, true, "N3"),
+                new Column("Spread Per Second", "SpreadPerSecond", true, false, "N3"),
+                new Column("Time Until Max Spread", "TimeUntilMaxSpread", true, true, "N3"),
+                new Column("Score", null, true, true, "N2", false),
+            };
+        }
+
+        public static List<string[]> GetDownloadInfo(string FilePath)
+        {
+            return new List<string[]>
+            {
+                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", FilePath + "\\weapons" }
+                //,new string[] {"http://starcitizendb.com/api/components/df/PowerPlant", FilePath + "\\power plants"}
+                //,new string[] {"http://starcitizendb.com/api/components/df/Cooler", FilePath + "\\coolers"}
+                //,new string[] {"http://starcitizendb.com/api/components/df/Shield", FilePath + "\\shields"}
+            };
         }
     }
 }
