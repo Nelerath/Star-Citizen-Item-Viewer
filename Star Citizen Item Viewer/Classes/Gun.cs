@@ -158,6 +158,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         public static Column[] GetColumns()
         {
             return new Column[] {
+                new Column("Id", "Id", false, false, "", false),
                 new Column("Name", "Name", false),
                 new Column("Total Damage", "DamageTotal", true, true),
                 new Column("Singleshot Firerate", "SingleFirerate", true, true, "N2"),
