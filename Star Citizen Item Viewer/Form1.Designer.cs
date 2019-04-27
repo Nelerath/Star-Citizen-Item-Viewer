@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.weaponsSelect = new System.Windows.Forms.TreeView();
+            this.componentSelect = new System.Windows.Forms.TreeView();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
@@ -51,11 +51,11 @@
             // 
             // weaponsSelect
             // 
-            this.weaponsSelect.Location = new System.Drawing.Point(12, 41);
-            this.weaponsSelect.Name = "weaponsSelect";
-            this.weaponsSelect.Size = new System.Drawing.Size(321, 351);
-            this.weaponsSelect.TabIndex = 0;
-            this.weaponsSelect.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.weaponsSelect_AfterCheck);
+            this.componentSelect.Location = new System.Drawing.Point(12, 41);
+            this.componentSelect.Name = "weaponsSelect";
+            this.componentSelect.Size = new System.Drawing.Size(321, 351);
+            this.componentSelect.TabIndex = 0;
+            this.componentSelect.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.weaponsSelect_AfterCheck);
             // 
             // button1
             // 
@@ -100,7 +100,8 @@
             this.listBox1.FormattingEnabled = true;
             this.listBox1.Items.AddRange(new object[] {
             "Weapons",
-            "Guns"});
+            "Guns",
+            "Armor"});
             this.listBox1.Location = new System.Drawing.Point(229, 398);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(104, 82);
@@ -118,7 +119,7 @@
             // 
             this.splitContainer1.Panel1.Controls.Add(this.DisplayGrid);
             this.splitContainer1.Panel1.Controls.Add(this.label1);
-            this.splitContainer1.Panel1.Controls.Add(this.weaponsSelect);
+            this.splitContainer1.Panel1.Controls.Add(this.componentSelect);
             this.splitContainer1.Panel1.Controls.Add(this.listBox1);
             this.splitContainer1.Panel1.Controls.Add(this.button1);
             // 
@@ -192,7 +193,7 @@
 
         #endregion
 
-        private System.Windows.Forms.TreeView weaponsSelect;
+        private System.Windows.Forms.TreeView componentSelect;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.DataGridView dataGridView1;

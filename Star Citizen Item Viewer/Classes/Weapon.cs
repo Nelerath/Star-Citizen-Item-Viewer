@@ -3,7 +3,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Star_Citizen_Item_Viewer.Classes
 {
@@ -106,9 +108,9 @@ namespace Star_Citizen_Item_Viewer.Classes
         {
             Id = Json.__ref;
             Name = string.IsNullOrEmpty((string)Json.name_local) ? File : Json.name_local;
-                
             Size = Json.size;
             Filename = File;
+            Type = Types.Weapon;
 
             Firerate = Json.Components.SCItemWeaponComponentParams.fire.fireRate / 60M;
             //HeatPerShot = Json.Components.SCItemWeaponComponentParams.fire.heatPerShot;
@@ -150,7 +152,10 @@ namespace Star_Citizen_Item_Viewer.Classes
                     Weapon w = new Weapon(json, path.Replace(filePath + "\\", "").Replace(".json", ""));
                     output.TryAdd(w.Id, w);
                 }
-                catch (Exception ex) { }
+                catch (Exception)
+                {
+                    File.Delete(path);
+                }
             });
             return new Dictionary<string, object>(output);
         }
@@ -196,6 +201,29 @@ namespace Star_Citizen_Item_Viewer.Classes
                 //,new string[] {"http://starcitizendb.com/api/components/df/Cooler", FilePath + "\\coolers"}
                 //,new string[] {"http://starcitizendb.com/api/components/df/Shield", FilePath + "\\shields"}
             };
+        }
+
+        public static TreeNode[] BuildTree(object[] Items)
+        {
+            Dictionary<string, TreeNode> tree = new Dictionary<string, TreeNode>();
+            foreach (Item item in Items)
+            {
+                TreeNode n = new TreeNode();
+                n.Name = item.Id;
+                n.Text = item.Name;
+
+                string key = item.Size.ToString();
+                if (tree.ContainsKey(key))
+                    tree[key].Nodes.Add(n);
+                else
+                    tree.Add(key, new TreeNode(key, new TreeNode[] { n }));
+            }
+            List<TreeNode> output = new List<TreeNode>();
+            foreach (var key in tree.Keys.OrderBy(x => Convert.ToInt16(x)))
+            {
+                output.Add(tree[key]);
+            }
+            return output.ToArray();
         }
     }
 }

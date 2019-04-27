@@ -3,7 +3,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Star_Citizen_Item_Viewer.Classes
 {
@@ -53,6 +55,9 @@ namespace Star_Citizen_Item_Viewer.Classes
         public decimal DamagePhysical { get { return Magazine.Ammo.DamagePhysical; } }
         public decimal DamageThermal { get { return Magazine.Ammo.DamageThermal; } }
         public decimal DamageTotal { get { return Magazine.Ammo.DamageTotal; } }
+        public decimal DamageSpecial { get; set; }
+
+        public decimal Weight { get; set; }
 
         public Gun(dynamic Json, string File, Dictionary<string, object> Magazines)
         {
@@ -60,7 +65,9 @@ namespace Star_Citizen_Item_Viewer.Classes
             Name = string.IsNullOrEmpty((string)Json.name_local) ? File : Json.name_local;
             Size = Json.size;
             Filename = File;
+            Type = Types.Gun;
 
+            Magazine = Magazines[Convert.ToString(Json.Components.SCItemWeaponComponentParams.ammoContainerRecord)];
             //ADSTime = Json.Components.SCItemWeaponComponentParams.aimAction.SWeaponActionAimSimpleParams.zoomInTime;
 
             if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams != null)
@@ -90,7 +97,16 @@ namespace Star_Citizen_Item_Viewer.Classes
                 RapidSpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.decay;
             }
 
-            Magazine = Magazines[Convert.ToString(Json.Components.SCItemWeaponComponentParams.ammoContainerRecord)];
+            if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams != null)
+            {
+                DamageSpecial = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.maxChargeModifier.damageMultiplier * DamageTotal;
+            }
+            else
+            {
+                DamageSpecial = DamageTotal;
+            }
+
+            Weight = Convert.ToDecimal(Json.Components.SEntityPhysicsControllerParams.PhysType.SEntityRigidPhysicsControllerParams.Mass) + Magazine.Weight;
 
             /*
             Lifetime = Json.ammo.lifetime;
@@ -110,6 +126,25 @@ namespace Star_Citizen_Item_Viewer.Classes
             */
         }
 
+        //public static Dictionary<string, object> parseAll(string FilePath)
+        //{
+        //    ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
+        //
+        //    Parallel.ForEach(Directory.GetFiles(FilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
+        //    {
+        //        try
+        //        {
+        //            string raw = File.ReadAllText(path).Replace("@", "");
+        //            dynamic json = JsonConvert.DeserializeObject(raw);
+        //            Gun g = new Gun(json, path.Replace(FilePath + "\\", "").Replace(".json", ""));
+        //            output.TryAdd(g.Id, g);
+        //        }
+        //        catch (Exception ex) { }
+        //    });
+        //
+        //    return new Dictionary<string, object>(output);
+        //}
+
         public static Dictionary<string, object> parseAll(string GunFilePath, string AttachmentFilePath, string AmmoFilePath)
         {
             ConcurrentDictionary<string, object> magazines = new ConcurrentDictionary<string, object>();
@@ -124,17 +159,27 @@ namespace Star_Citizen_Item_Viewer.Classes
                     Ammo a = new Ammo(json, path.Replace(AmmoFilePath + "\\", "").Replace(".json", ""));
                     ammo.TryAdd(a.Id, a);
                 }
-                catch (Exception) { }
+                catch (Exception)
+                {
+                    File.Delete(path);
+                }
             });
 
             Parallel.ForEach(Directory.GetFiles(AttachmentFilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path => 
             {
-                string raw = File.ReadAllText(path).Replace("@", "");
-                dynamic json = JsonConvert.DeserializeObject(raw);
-                if (json.subtype == "Magazine")
+                try
                 {
-                    Magazine m = new Magazine(json, path.Replace(AttachmentFilePath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(ammo));
-                    magazines.TryAdd(m.Id, m);
+                    string raw = File.ReadAllText(path).Replace("@", "");
+                    dynamic json = JsonConvert.DeserializeObject(raw);
+                    if (json.subtype == "Magazine")
+                    {
+                        Magazine m = new Magazine(json, path.Replace(AttachmentFilePath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(ammo));
+                        magazines.TryAdd(m.Id, m);
+                    }
+                }
+                catch (Exception)
+                {
+                    File.Delete(path);
                 }
             });
 
@@ -149,7 +194,10 @@ namespace Star_Citizen_Item_Viewer.Classes
                     Gun g = new Gun(json, path.Replace(GunFilePath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(magazines));
                     output.TryAdd(g.Id, g);
                 }
-                catch (Exception ex) { }
+                catch (Exception)
+                {
+                    File.Delete(path);
+                }
             });
 
             return new Dictionary<string, object>(output);
@@ -161,6 +209,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 new Column("Id", "Id", false, false, "", false),
                 new Column("Name", "Name", false),
                 new Column("Total Damage", "DamageTotal", true, true),
+                new Column("Special Damage", "DamageSpecial", true, true, "N2"),
                 new Column("Singleshot Firerate", "SingleFirerate", true, true, "N2"),
                 new Column("Burst Firerate", "BurstFirerate", true, true, "N2"),
                 new Column("Auto Firerate", "RapidFirerate", true, true, "N2"),
@@ -177,6 +226,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 //new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
                 new Column("Projectile Velocity", "Speed", true, true),
                 new Column("Max Range", "MaxRange", true, true),
+                new Column("Weight", "Weight", true, false, "N2"),
                 //new Column("Max Spread", "MaxSpread", true, false, "N3"),
                 //new Column("Initial Spread", "InitialSpread", true, false, "N3"),
                 //new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
@@ -200,12 +250,36 @@ namespace Star_Citizen_Item_Viewer.Classes
                 //,new string[] {"http://starcitizendb.com/api/components/df/Shield", FilePath + "\\shields"}
             };
         }
+
+        public static TreeNode[] BuildTree(object[] Items)
+        {
+            Dictionary<string, TreeNode> tree = new Dictionary<string, TreeNode>();
+            foreach (Item item in Items)
+            {
+                TreeNode n = new TreeNode();
+                n.Name = item.Id;
+                n.Text = item.Name;
+
+                string key = item.Size.ToString();
+                if (tree.ContainsKey(key))
+                    tree[key].Nodes.Add(n);
+                else
+                    tree.Add(key, new TreeNode(key, new TreeNode[] { n }));
+            }
+            List<TreeNode> output = new List<TreeNode>();
+            foreach (var key in tree.Keys.OrderBy(x => Convert.ToInt16(x)))
+            {
+                output.Add(tree[key]);
+            }
+            return output.ToArray();
+        }
     }
 
     public class Magazine : Item
     {
         public Ammo Ammo { get; set; }
         public int AmmoCount { get; set; }
+        public decimal Weight { get; set; }
 
         public Magazine(dynamic Json, string File, Dictionary<string, object> Ammo)
         {
@@ -213,6 +287,8 @@ namespace Star_Citizen_Item_Viewer.Classes
             Name = string.IsNullOrEmpty((string)Json.name_local) ? File : Json.name_local;
             Size = Json.size;
             Filename = File;
+
+            Weight = Convert.ToDecimal(Json.Components.SEntityPhysicsControllerParams.PhysType.SEntityRigidPhysicsControllerParams.Mass);
 
             this.Ammo = Ammo[Convert.ToString(Json.Components.SAmmoContainerComponentParams.ammoParamsRecord)];
             AmmoCount = (int)Json.Components.SAmmoContainerComponentParams.maxAmmoCount;

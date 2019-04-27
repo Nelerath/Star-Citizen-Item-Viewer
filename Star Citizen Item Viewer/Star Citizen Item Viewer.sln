@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Star Citizen Item Viewer", "..\..\Star Citizen Calculator\Star Citizen Calculator\Star Citizen Item Viewer.csproj", "{ED1F3154-4456-4EA1-A6E8-EFAA95272B47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Star Citizen Item Viewer", "Star Citizen Item Viewer.csproj", "{ED1F3154-4456-4EA1-A6E8-EFAA95272B47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -29,7 +29,7 @@ namespace Star_Citizen_Item_Viewer
         {
             InitializeComponent();
             this.Text = "Star Citizen Item Viewer";
-            weaponsSelect.CheckBoxes = true;
+            componentSelect.CheckBoxes = true;
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.AllowUserToDeleteRows = false;
             dataGridView1.AllowUserToOrderColumns = true;
@@ -50,6 +50,8 @@ namespace Star_Citizen_Item_Viewer
                 Directory.CreateDirectory(FilePath + "\\attachments");
             if (!Directory.Exists(FilePath + "\\ammo"))
                 Directory.CreateDirectory(FilePath + "\\ammo");
+            if (!Directory.Exists(FilePath + "\\armor"))
+                Directory.CreateDirectory(FilePath + "\\armor");
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -74,7 +76,7 @@ namespace Star_Citizen_Item_Viewer
 
             bool displayGrid = DisplayGrid.Enabled;
             DisplayGrid.Enabled = false;
-            weaponsSelect.Enabled = false;
+            componentSelect.Enabled = false;
             button1.Enabled = false;
             
 
@@ -91,7 +93,7 @@ namespace Star_Citizen_Item_Viewer
                     Refresh();
                     progressBar1.Visible = false;
                     DisplayGrid.Enabled = displayGrid;
-                    weaponsSelect.Enabled = true;
+                    componentSelect.Enabled = true;
                     button1.Enabled = true;
                 };
                 this.BeginInvoke(d);
@@ -150,13 +152,14 @@ namespace Star_Citizen_Item_Viewer
 
         private void Refresh()
         {
-            weaponsSelect.Nodes.Clear();
+            componentSelect.Nodes.Clear();
             switch (Selected)
             {
                 case "Weapons":
                     MasterData = Weapon.parseAll(FilePath + "\\weapons");
                     Columns = Weapon.GetColumns();
                     Downloads = Weapon.GetDownloadInfo(FilePath);
+                    componentSelect.Nodes.AddRange(Weapon.BuildTree(MasterData.Values.ToArray()));
                     DisplayGrid.Enabled = true;
                     break;
                 case "Power Plants":
@@ -171,25 +174,35 @@ namespace Star_Citizen_Item_Viewer
                     MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
                     Columns = Gun.GetColumns();
                     Downloads = Gun.GetDownloadInfo(FilePath);
+                    componentSelect.Nodes.AddRange(Gun.BuildTree(MasterData.Values.ToArray()));
+                    DisplayGrid.Enabled = false;
+                    break;
+                case "Armor":
+                    MasterData = Armor.parseAll(FilePath + "\\Armor");
+                    Columns = Armor.GetColumns();
+                    Downloads = Armor.GetDownloadInfo(FilePath);
+                    componentSelect.Nodes.AddRange(Armor.BuildTree(MasterData.Values.ToArray()));
                     DisplayGrid.Enabled = false;
                     break;
             }
-            Dictionary<int, TreeNode> sizes = new Dictionary<int, TreeNode>();
-            foreach (Item weapon in MasterData.Values)
-            {
-                TreeNode n = new TreeNode();
-                n.Name = weapon.Id;
-                n.Text = weapon.Name;
+            //Dictionary<int, TreeNode> sizes = new Dictionary<int, TreeNode>();
+            //foreach (Item weapon in MasterData.Values)
+            //{
+            //    TreeNode n = new TreeNode();
+            //    n.Name = weapon.Id;
+            //    n.Text = weapon.Name;
+            //
+            //    if (sizes.ContainsKey(weapon.Size))
+            //        sizes[weapon.Size].Nodes.Add(n);
+            //    else
+            //        sizes.Add(weapon.Size, new TreeNode("Size " + weapon.Size.ToString(), new TreeNode[] { n }));
+            //}
+            //foreach (var key in sizes.Keys.OrderBy(x => x))
+            //{
+            //    componentSelect.Nodes.Add(sizes[key]);
+            //}
 
-                if (sizes.ContainsKey(weapon.Size))
-                    sizes[weapon.Size].Nodes.Add(n);
-                else
-                    sizes.Add(weapon.Size, new TreeNode("Size " + weapon.Size.ToString(), new TreeNode[] { n }));
-            }
-            foreach (var key in sizes.Keys.OrderBy(x => x))
-            {
-                weaponsSelect.Nodes.Add(sizes[key]);
-            }
+            
 
             dataGridView1.Columns.Clear();
             for (int i = 0; i < Columns.Length; i++)
