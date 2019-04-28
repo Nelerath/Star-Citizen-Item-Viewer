@@ -14,6 +14,7 @@ namespace Star_Citizen_Item_Viewer.Classes
     public class Weapon : Item
     {
         public decimal Firerate { get; set; }
+        public int ProjectilesPerShot { get; set; }
 
         public int MaximumTemperature { get; set; }
         public decimal HeatPerShot { get; set; }
@@ -115,6 +116,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             Type = Types.Weapon;
 
             Firerate = Json.Components.SCItemWeaponComponentParams.fire.fireRate / 60M;
+            ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.pelletCount ?? 1;
             //HeatPerShot = Json.Components.SCItemWeaponComponentParams.fire.heatPerShot;
             //MaximumTemperature = Json.Components.EntityComponentHeatConnection.MaximumTemperature;
 
@@ -140,6 +142,12 @@ namespace Star_Citizen_Item_Viewer.Classes
             DamageEnergy += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageEnergy : 0;
             DamagePhysical += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
             DamageThermal += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
+
+            DamageBiochemical *= ProjectilesPerShot;
+            DamageDistortion *= ProjectilesPerShot;
+            DamageEnergy *= ProjectilesPerShot;
+            DamagePhysical *= ProjectilesPerShot;
+            DamageThermal *= ProjectilesPerShot;
         }
 
         public static Dictionary<string,object> parseAll(string filePath)
@@ -173,6 +181,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 new Column("Alpha Damage", "DamageTotal", true, true),
                 new Column("Damage Per Second", "DamagePerSecond", true, true, "N2"),
                 new Column("Firerate", "Firerate", true, true, "N2"),
+                new Column("Projectiles Per Shot", "ProjectilesPerShot", true, true),
                 new Column("Biochemical Damage", "DamageBiochemical", true, true),
                 new Column("Distortion Damage", "DamageDistortion", true, true),
                 new Column("Energy Damage", "DamageEnergy", true, true),
@@ -260,7 +269,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 });
             }
             catch (OperationCanceledException) { }
-            return new List<Series>(list);
+            return new List<Series>(list).OrderBy(x => x.Name).ToList();
         }
     }
 }

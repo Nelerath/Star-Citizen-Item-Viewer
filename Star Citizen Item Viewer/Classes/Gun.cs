@@ -323,7 +323,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 });
             }
             catch (OperationCanceledException) { }
-            return new List<Series>(list);
+            return new List<Series>(list).OrderBy(x => x.Name).ToList();
         }
     }
 
