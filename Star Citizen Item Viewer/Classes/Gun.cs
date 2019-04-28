@@ -4,8 +4,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer.Classes
 {
@@ -31,6 +33,8 @@ namespace Star_Citizen_Item_Viewer.Classes
         public decimal RapidSpreadGrowth { get; set; }
         public decimal RapidSpreadDecay { get; set; }
 
+        public int ProjectilesPerShot { get; set; }
+
         public Magazine Magazine { get; set; }
 
         public int Speed
@@ -49,12 +53,12 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
         }
 
-        public decimal DamageBiochemical { get { return Magazine.Ammo.DamageBiochemical; } }
-        public decimal DamageDistortion { get { return Magazine.Ammo.DamageDistortion; } }
-        public decimal DamageEnergy { get { return Magazine.Ammo.DamageEnergy; } }
-        public decimal DamagePhysical { get { return Magazine.Ammo.DamagePhysical; } }
-        public decimal DamageThermal { get { return Magazine.Ammo.DamageThermal; } }
-        public decimal DamageTotal { get { return Magazine.Ammo.DamageTotal; } }
+        public decimal DamageBiochemical { get { return Magazine.Ammo.DamageBiochemical * ProjectilesPerShot; } }
+        public decimal DamageDistortion { get { return Magazine.Ammo.DamageDistortion * ProjectilesPerShot; } }
+        public decimal DamageEnergy { get { return Magazine.Ammo.DamageEnergy * ProjectilesPerShot; } }
+        public decimal DamagePhysical { get { return Magazine.Ammo.DamagePhysical * ProjectilesPerShot; } }
+        public decimal DamageThermal { get { return Magazine.Ammo.DamageThermal * ProjectilesPerShot; } }
+        public decimal DamageTotal { get { return Magazine.Ammo.DamageTotal * ProjectilesPerShot; } }
         public decimal DamageSpecial { get; set; }
 
         public decimal Weight { get; set; }
@@ -68,6 +72,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             Type = Types.Gun;
 
             Magazine = Magazines[Convert.ToString(Json.Components.SCItemWeaponComponentParams.ammoContainerRecord)];
+            ProjectilesPerShot = 1;
             //ADSTime = Json.Components.SCItemWeaponComponentParams.aimAction.SWeaponActionAimSimpleParams.zoomInTime;
 
             if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams != null)
@@ -77,6 +82,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 SingleInitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.firstAttack;
                 SingleSpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.attack;
                 SingleSpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.decay;
+                ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.pelletCount ?? 1;
             }
 
             if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams != null)
@@ -86,6 +92,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 BurstInitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
                 BurstSpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.attack;
                 BurstSpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.decay;
+                ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
             }
             
             if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams != null)
@@ -95,6 +102,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 RapidInitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
                 RapidSpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.attack;
                 RapidSpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.decay;
+                ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
             }
 
             if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams != null)
@@ -107,23 +115,6 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
 
             Weight = Convert.ToDecimal(Json.Components.SEntityPhysicsControllerParams.PhysType.SEntityRigidPhysicsControllerParams.Mass) + Magazine.Weight;
-
-            /*
-            Lifetime = Json.ammo.lifetime;
-            Speed = Json.ammo.speed;
-            DamageBiochemical = Json.ammo.bullet.damage.DamageInfo.DamageBiochemical;
-            DamageDistortion = Json.ammo.bullet.damage.DamageInfo.DamageDistortion;
-            DamageEnergy = Json.ammo.bullet.damage.DamageInfo.DamageEnergy;
-            DamagePhysical = Json.ammo.bullet.damage.DamageInfo.DamagePhysical;
-            DamageThermal = Json.ammo.bullet.damage.DamageInfo.DamageThermal;
-
-            // Explosive ammo
-            DamageBiochemical += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageBiochemical : 0;
-            DamageDistortion += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageDistortion : 0;
-            DamageEnergy += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageEnergy : 0;
-            DamagePhysical += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
-            DamageThermal += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
-            */
         }
 
         //public static Dictionary<string, object> parseAll(string FilePath)
@@ -161,7 +152,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                 }
                 catch (Exception)
                 {
+                    #if !DEBUG
                     File.Delete(path);
+                    #endif
                 }
             });
 
@@ -179,7 +172,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                 }
                 catch (Exception)
                 {
+                    #if !DEBUG
                     File.Delete(path);
+                    #endif
                 }
             });
 
@@ -196,7 +191,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                 }
                 catch (Exception)
                 {
+                    #if !DEBUG
                     File.Delete(path);
+                    #endif
                 }
             });
 
@@ -210,6 +207,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 new Column("Name", "Name", false),
                 new Column("Total Damage", "DamageTotal", true, true),
                 new Column("Special Damage", "DamageSpecial", true, true, "N2"),
+                new Column("Projectiles Per Shot", "ProjectilesPerShot", true, true),
                 new Column("Singleshot Firerate", "SingleFirerate", true, true, "N2"),
                 new Column("Burst Firerate", "BurstFirerate", true, true, "N2"),
                 new Column("Auto Firerate", "RapidFirerate", true, true, "N2"),
@@ -272,6 +270,60 @@ namespace Star_Citizen_Item_Viewer.Classes
                 output.Add(tree[key]);
             }
             return output.ToArray();
+        }
+
+        public static List<Series> Calculator(List<object> Data, int Ticks, CancellationToken Token)
+        {
+            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
+            try
+            {
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
+                Parallel.ForEach(Data, options, (item, loopState) =>
+                {
+                    Gun g = (Gun)item;
+                    int dataCount = Data.Count;
+                    if (g.SingleFirerate > 0)
+                    {
+                        Series s = GetNewSeries(g.Name + " Single");
+                        decimal[] x = new decimal[Ticks + 1];
+                        decimal[] y = new decimal[Ticks + 1];
+                        for (int i = 0; i <= Ticks; i++)
+                        {
+                            x[i] = i * .05M;
+                            y[i] = g.DamageTotal + (g.DamageTotal * Math.Floor((i * .05M) / (1M / g.SingleFirerate)));
+                            if (options.CancellationToken.IsCancellationRequested)
+                                loopState.Break();
+                        }
+
+                        s.Points.DataBindXY(x, y);
+                        list.Enqueue(s);
+                    }
+
+                    if (g.RapidFirerate > 0)
+                    {
+                        Series s = GetNewSeries(g.Name + " Auto");
+                        decimal[] x = new decimal[Ticks + 1];
+                        decimal[] y = new decimal[Ticks + 1];
+                        for (int i = 0; i <= Ticks; i++)
+                        {
+                            x[i] = i * .05M;
+                            y[i] = g.DamageTotal + (g.DamageTotal * Math.Floor((i * .05M) / (1M / g.RapidFirerate)));
+                            if (options.CancellationToken.IsCancellationRequested)
+                                loopState.Break();
+                        }
+
+                        s.Points.DataBindXY(x, y);
+                        list.Enqueue(s);
+                    }
+
+                    if (g.BurstFirerate > 0)
+                    {
+                        Series s = GetNewSeries(g.Name + " Burst");
+                    }
+                });
+            }
+            catch (OperationCanceledException) { }
+            return new List<Series>(list);
         }
     }
 

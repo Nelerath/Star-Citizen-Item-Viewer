@@ -1,6 +1,6 @@
 ﻿namespace Star_Citizen_Item_Viewer
 {
-    partial class Form1
+    partial class MainSheet
     {
         /// <summary>
         /// Required designer variable.
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainSheet));
             this.componentSelect = new System.Windows.Forms.TreeView();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -49,10 +50,10 @@
             this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
             // 
-            // weaponsSelect
+            // componentSelect
             // 
             this.componentSelect.Location = new System.Drawing.Point(12, 41);
-            this.componentSelect.Name = "weaponsSelect";
+            this.componentSelect.Name = "componentSelect";
             this.componentSelect.Size = new System.Drawing.Size(321, 351);
             this.componentSelect.TabIndex = 0;
             this.componentSelect.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.weaponsSelect_AfterCheck);
@@ -168,13 +169,14 @@
             this.splitContainer2.SplitterDistance = 510;
             this.splitContainer2.TabIndex = 9;
             // 
-            // Form1
+            // MainSheet
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1104, 539);
             this.Controls.Add(this.splitContainer2);
-            this.Name = "Form1";
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Name = "MainSheet";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();

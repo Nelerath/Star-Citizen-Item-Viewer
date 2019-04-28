@@ -4,8 +4,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer.Classes
 {
@@ -154,7 +156,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                 }
                 catch (Exception)
                 {
+                    #if !DEBUG
                     File.Delete(path);
+                    #endif
                 }
             });
             return new Dictionary<string, object>(output);
@@ -224,6 +228,39 @@ namespace Star_Citizen_Item_Viewer.Classes
                 output.Add(tree[key]);
             }
             return output.ToArray();
+        }
+
+        public static List<Series> Calculator(List<object> Data, int Ticks, CancellationToken Token)
+        {
+            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
+            try
+            {
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = Token };
+                Parallel.ForEach(Data, options, (item, loopState) =>
+                {
+                    Weapon w = (Weapon)item;
+                    Series s = GetNewSeries(w.Name);
+
+                    decimal[] x = new decimal[Ticks + 1];
+                    decimal[] y = new decimal[Ticks + 1];
+                    decimal firerate = Convert.ToDecimal(item.Get("Firerate"));
+                    for (int i = 0; i <= Ticks; i++)
+                    {
+                        x[i] = i * .05M;
+                        y[i] = w.DamageTotal + (w.DamageTotal * Math.Floor((i * .05M) / (1 / w.Firerate)));
+                        if (options.CancellationToken.IsCancellationRequested)
+                            break;
+                    }
+
+                    if (options.CancellationToken.IsCancellationRequested)
+                        loopState.Break();
+
+                    s.Points.DataBindXY(x, y);
+                    list.Enqueue(s);
+                });
+            }
+            catch (OperationCanceledException) { }
+            return new List<Series>(list);
         }
     }
 }

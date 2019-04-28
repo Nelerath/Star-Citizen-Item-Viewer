@@ -6,13 +6,14 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer
 {
-    public partial class Form1 : Form
+    public partial class MainSheet : Form
     {
         public static string FilePath = Directory.GetCurrentDirectory();
 
@@ -24,8 +25,9 @@ namespace Star_Citizen_Item_Viewer
 
         private static List<object> Data = new List<object>();
         private static Column[] Columns = Weapon.GetColumns();
+        private static Func<List<object>, int, CancellationToken, List<Series>> GraphCalculator = Weapon.Calculator;
 
-        public Form1()
+        public MainSheet()
         {
             InitializeComponent();
             this.Text = "Star Citizen Item Viewer";
@@ -102,8 +104,11 @@ namespace Star_Citizen_Item_Viewer
 
         private void DisplayGrid_Click(object sender, EventArgs e)
         {
-            DamageComparison view = new DamageComparison(Data);
-            view.ShowDialog();
+            Task.Run(() =>
+            {
+                DamageComparison view = new DamageComparison(Data, GraphCalculator);
+                view.ShowDialog();
+            });
         }
 
         private void weaponsSelect_AfterCheck(object sender, TreeViewEventArgs e)
@@ -159,6 +164,7 @@ namespace Star_Citizen_Item_Viewer
                     MasterData = Weapon.parseAll(FilePath + "\\weapons");
                     Columns = Weapon.GetColumns();
                     Downloads = Weapon.GetDownloadInfo(FilePath);
+                    GraphCalculator = Weapon.Calculator;
                     componentSelect.Nodes.AddRange(Weapon.BuildTree(MasterData.Values.ToArray()));
                     DisplayGrid.Enabled = true;
                     break;
@@ -174,8 +180,9 @@ namespace Star_Citizen_Item_Viewer
                     MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
                     Columns = Gun.GetColumns();
                     Downloads = Gun.GetDownloadInfo(FilePath);
+                    GraphCalculator = Gun.Calculator;
                     componentSelect.Nodes.AddRange(Gun.BuildTree(MasterData.Values.ToArray()));
-                    DisplayGrid.Enabled = false;
+                    DisplayGrid.Enabled = true;
                     break;
                 case "Armor":
                     MasterData = Armor.parseAll(FilePath + "\\Armor");

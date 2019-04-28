@@ -46,7 +46,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                 }
                 catch (Exception ex)
                 {
+                    #if !DEBUG
                     File.Delete(path);
+                    #endif
                 }
             });
 
@@ -96,5 +98,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
             return output.ToArray();
         }
+
+        
     }
 }
