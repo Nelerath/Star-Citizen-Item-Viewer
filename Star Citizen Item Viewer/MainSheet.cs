@@ -27,6 +27,10 @@ namespace Star_Citizen_Item_Viewer
         private static Column[] Columns = Weapon.GetColumns();
         private static Func<List<object>, int, CancellationToken, List<Series>> GraphCalculator = Weapon.Calculator;
 
+        public static bool Overclocked = false;
+        public static bool Overpowered = false;
+        public static bool Hot = false;
+
         public MainSheet()
         {
             InitializeComponent();
@@ -146,14 +150,43 @@ namespace Star_Citizen_Item_Viewer
 
             if (Data.Count > 1)
                 Recolor();
+        }
 
-            dataGridView1.Columns[dataGridView1.Columns.IndexOf("Name")].Frozen = true;
-            dataGridView1.AutoResizeColumns();
+        private void OverclockedCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Overclocked = OverclockedCheckbox.Checked;
+            ReloadTable();
+        }
+
+        private void OverpoweredCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Overpowered = OverpoweredCheckbox.Checked;
+            ReloadTable();
+        }
+
+        private void HotCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Hot = HotCheckbox.Checked;
+            ReloadTable();
         }
 
 
 
-
+        private void ReloadTable()
+        {
+            dataGridView1.Rows.Clear();
+            foreach (TreeNode parentNode in componentSelect.Nodes)
+            {
+                foreach (TreeNode item in parentNode.Nodes)
+                {
+                    if (item.Checked)
+                        AddRow(MasterData[item.Name]);
+                }
+            }
+            dataGridView1.AutoResizeColumns();
+            if (Data.Count > 1)
+                Recolor();
+        }
 
         private void Refresh()
         {
@@ -161,12 +194,23 @@ namespace Star_Citizen_Item_Viewer
             switch (Selected)
             {
                 case "Weapons":
-                    MasterData = Weapon.parseAll(FilePath + "\\weapons");
+                    Task.Run(() =>
+                    {
+                        MasterData = Weapon.parseAll(FilePath + "\\weapons");
+                        var tree = Weapon.BuildTree(MasterData.Values.ToArray());
+                        MethodInvoker d = delegate ()
+                        {
+                            componentSelect.Nodes.AddRange(tree);
+                        };
+                        componentSelect.BeginInvoke(d);
+                    });
                     Columns = Weapon.GetColumns();
                     Downloads = Weapon.GetDownloadInfo(FilePath);
                     GraphCalculator = Weapon.Calculator;
-                    componentSelect.Nodes.AddRange(Weapon.BuildTree(MasterData.Values.ToArray()));
                     DisplayGrid.Enabled = true;
+                    OverclockedCheckbox.Enabled = true;
+                    OverpoweredCheckbox.Enabled = true;
+                    HotCheckbox.Enabled = true;
                     break;
                 case "Power Plants":
                     MasterData = new Dictionary<string, object>();
@@ -177,19 +221,41 @@ namespace Star_Citizen_Item_Viewer
                     DisplayGrid.Enabled = false;
                     break;
                 case "Guns":
-                    MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
+                    Task.Run(() =>
+                    {
+                        MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
+                        var tree = Gun.BuildTree(MasterData.Values.ToArray());
+                        MethodInvoker d = delegate ()
+                        {
+                            componentSelect.Nodes.AddRange(tree);
+                        };
+                        componentSelect.BeginInvoke(d);
+                    });
                     Columns = Gun.GetColumns();
                     Downloads = Gun.GetDownloadInfo(FilePath);
                     GraphCalculator = Gun.Calculator;
-                    componentSelect.Nodes.AddRange(Gun.BuildTree(MasterData.Values.ToArray()));
                     DisplayGrid.Enabled = true;
+                    OverclockedCheckbox.Enabled = false;
+                    OverpoweredCheckbox.Enabled = false;
+                    HotCheckbox.Enabled = false;
                     break;
                 case "Armor":
-                    MasterData = Armor.parseAll(FilePath + "\\Armor");
+                    Task.Run(() =>
+                    {
+                        MasterData = Armor.parseAll(FilePath + "\\Armor");
+                        var tree = Armor.BuildTree(MasterData.Values.ToArray());
+                        MethodInvoker d = delegate ()
+                        {
+                            componentSelect.Nodes.AddRange(tree);
+                        };
+                        componentSelect.BeginInvoke(d);
+                    });
                     Columns = Armor.GetColumns();
                     Downloads = Armor.GetDownloadInfo(FilePath);
-                    componentSelect.Nodes.AddRange(Armor.BuildTree(MasterData.Values.ToArray()));
                     DisplayGrid.Enabled = false;
+                    OverclockedCheckbox.Enabled = false;
+                    OverpoweredCheckbox.Enabled = false;
+                    HotCheckbox.Enabled = false;
                     break;
             }
             //Dictionary<int, TreeNode> sizes = new Dictionary<int, TreeNode>();
@@ -219,6 +285,7 @@ namespace Star_Citizen_Item_Viewer
                 dataGridView1.Columns[i].DefaultCellStyle.Format = Columns[i].Format;
                 dataGridView1.Columns[i].Visible = Columns[i].Visible;
             }
+            dataGridView1.Columns[dataGridView1.Columns.IndexOf("Name")].Frozen = true;
         }
 
         private void DownloadEverything(string Url, string FilePath)
@@ -302,7 +369,7 @@ namespace Star_Citizen_Item_Viewer
             }
             dataRow.Cells[scoreColumn].Value = score;
 
-            //dataGridView1.Rows.Add(dataRow);
+            dataGridView1.AutoResizeColumns();
         }
 
         private void RemoveRow(string Name)
@@ -318,6 +385,7 @@ namespace Star_Citizen_Item_Viewer
             }
 
             Recolor();
+            dataGridView1.AutoResizeColumns();
         }
 
         private void Recolor()

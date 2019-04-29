@@ -78,12 +78,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Armor.cs" />
-    <Compile Include="Classes\Cooler.cs" />
     <Compile Include="Classes\Gun.cs" />
     <Compile Include="Classes\Item.cs" />
-    <Compile Include="Classes\Reactor.cs" />
-    <Compile Include="Classes\Shield.cs" />
-    <Compile Include="Classes\Ship.cs" />
     <Compile Include="Classes\Weapon.cs" />
     <Compile Include="DamageComparison.cs">
       <SubType>Form</SubType>

@@ -36,9 +36,12 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.OverpoweredCheckbox = new System.Windows.Forms.CheckBox();
+            this.OverclockedCheckbox = new System.Windows.Forms.CheckBox();
             this.DisplayGrid = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.HotCheckbox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -113,7 +116,7 @@
             "Armor"});
             this.listBox1.Location = new System.Drawing.Point(229, 398);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(104, 68);
+            this.listBox1.Size = new System.Drawing.Size(104, 84);
             this.listBox1.TabIndex = 7;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
@@ -127,6 +130,9 @@
             // 
             // splitContainer1.Panel1
             // 
+            this.splitContainer1.Panel1.Controls.Add(this.HotCheckbox);
+            this.splitContainer1.Panel1.Controls.Add(this.OverpoweredCheckbox);
+            this.splitContainer1.Panel1.Controls.Add(this.OverclockedCheckbox);
             this.splitContainer1.Panel1.Controls.Add(this.DisplayGrid);
             this.splitContainer1.Panel1.Controls.Add(this.label1);
             this.splitContainer1.Panel1.Controls.Add(this.componentSelect);
@@ -141,11 +147,33 @@
             this.splitContainer1.SplitterDistance = 343;
             this.splitContainer1.TabIndex = 8;
             // 
+            // OverpoweredCheckbox
+            // 
+            this.OverpoweredCheckbox.AutoSize = true;
+            this.OverpoweredCheckbox.Location = new System.Drawing.Point(93, 490);
+            this.OverpoweredCheckbox.Name = "OverpoweredCheckbox";
+            this.OverpoweredCheckbox.Size = new System.Drawing.Size(78, 17);
+            this.OverpoweredCheckbox.TabIndex = 10;
+            this.OverpoweredCheckbox.Text = "Overpower";
+            this.OverpoweredCheckbox.UseVisualStyleBackColor = true;
+            this.OverpoweredCheckbox.CheckedChanged += new System.EventHandler(this.OverpoweredCheckbox_CheckedChanged);
+            // 
+            // OverclockedCheckbox
+            // 
+            this.OverclockedCheckbox.AutoSize = true;
+            this.OverclockedCheckbox.Location = new System.Drawing.Point(12, 490);
+            this.OverclockedCheckbox.Name = "OverclockedCheckbox";
+            this.OverclockedCheckbox.Size = new System.Drawing.Size(75, 17);
+            this.OverclockedCheckbox.TabIndex = 9;
+            this.OverclockedCheckbox.Text = "Overclock";
+            this.OverclockedCheckbox.UseVisualStyleBackColor = true;
+            this.OverclockedCheckbox.CheckedChanged += new System.EventHandler(this.OverclockedCheckbox_CheckedChanged);
+            // 
             // DisplayGrid
             // 
             this.DisplayGrid.Location = new System.Drawing.Point(12, 398);
             this.DisplayGrid.Name = "DisplayGrid";
-            this.DisplayGrid.Size = new System.Drawing.Size(211, 109);
+            this.DisplayGrid.Size = new System.Drawing.Size(211, 89);
             this.DisplayGrid.TabIndex = 8;
             this.DisplayGrid.Text = "Display Grid";
             this.DisplayGrid.UseVisualStyleBackColor = true;
@@ -178,6 +206,17 @@
             this.splitContainer2.Size = new System.Drawing.Size(1104, 539);
             this.splitContainer2.SplitterDistance = 510;
             this.splitContainer2.TabIndex = 9;
+            // 
+            // HotCheckbox
+            // 
+            this.HotCheckbox.AutoSize = true;
+            this.HotCheckbox.Location = new System.Drawing.Point(177, 490);
+            this.HotCheckbox.Name = "HotCheckbox";
+            this.HotCheckbox.Size = new System.Drawing.Size(43, 17);
+            this.HotCheckbox.TabIndex = 11;
+            this.HotCheckbox.Text = "Hot";
+            this.HotCheckbox.UseVisualStyleBackColor = true;
+            this.HotCheckbox.CheckedChanged += new System.EventHandler(this.HotCheckbox_CheckedChanged);
             // 
             // MainSheet
             // 
@@ -218,6 +257,9 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Button DisplayGrid;
+        private System.Windows.Forms.CheckBox OverpoweredCheckbox;
+        private System.Windows.Forms.CheckBox OverclockedCheckbox;
+        private System.Windows.Forms.CheckBox HotCheckbox;
     }
 }
 

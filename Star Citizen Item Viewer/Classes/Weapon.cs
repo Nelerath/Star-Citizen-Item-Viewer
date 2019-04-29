@@ -13,7 +13,24 @@ namespace Star_Citizen_Item_Viewer.Classes
 {
     public class Weapon : Item
     {
-        public decimal Firerate { get; set; }
+        private decimal _firerate { get; set; }
+        public decimal Firerate {
+            get
+            {
+                decimal output = _firerate;
+                if (MainSheet.Overclocked)
+                    output *= OverclockFirerateMultiplier;
+                if (MainSheet.Overpowered)
+                    output *= OverpowerFirerateMultiplier;
+                if (MainSheet.Hot)
+                    output *= HeatFirerateMultiplier;
+                return output;
+            }
+            set
+            {
+                _firerate = value;
+            }
+        }
         public int ProjectilesPerShot { get; set; }
 
         public int MaximumTemperature { get; set; }
@@ -48,15 +65,112 @@ namespace Star_Citizen_Item_Viewer.Classes
         // Ammo
         public decimal Lifetime { get; set; }
         public int Speed { get; set; }
-        public decimal DamageBiochemical {get;set;}
-        public decimal DamageDistortion { get; set; }
-        public decimal DamageEnergy { get; set; }
-        public decimal DamagePhysical { get; set; }
-        public decimal DamageThermal { get; set; }
+        private decimal _damageBiochemical { get; set; }
+        private decimal _damageDistortion { get; set; }
+        private decimal _damageEnergy { get; set; }
+        private decimal _damagePhysical { get; set; }
+        private decimal _damageThermal { get; set; }
+        public decimal DamageBiochemical
+        {
+            get
+            {
+                decimal output = _damageBiochemical;
+                if (MainSheet.Overclocked)
+                    output *= OverclockDamageMultiplier;
+                if (MainSheet.Overpowered)
+                    output *= OverpowerDamageMultiplier;
+                if (MainSheet.Hot)
+                    output *= HeatDamageMultiplier;
+                return output;
+            }
+            set
+            {
+                _damageBiochemical = value;
+            }
+        }
+        public decimal DamageDistortion
+        {
+            get
+            {
+                decimal output = _damageDistortion;
+                if (MainSheet.Overclocked)
+                    output *= OverclockDamageMultiplier;
+                if (MainSheet.Overpowered)
+                    output *= OverpowerDamageMultiplier;
+                if (MainSheet.Hot)
+                    output *= HeatDamageMultiplier;
+                return output;
+            }
+            set
+            {
+                _damageDistortion = value;
+            }
+        }
+        public decimal DamageEnergy
+        {
+            get
+            {
+                decimal output = _damageEnergy;
+                if (MainSheet.Overclocked)
+                    output *= OverclockDamageMultiplier;
+                if (MainSheet.Overpowered)
+                    output *= OverpowerDamageMultiplier;
+                if (MainSheet.Hot)
+                    output *= HeatDamageMultiplier;
+                return output;
+            }
+            set
+            {
+                _damageEnergy = value;
+            }
+        }
+        public decimal DamagePhysical
+        {
+            get
+            {
+                decimal output = _damagePhysical;
+                if (MainSheet.Overclocked)
+                    output *= OverclockDamageMultiplier;
+                if (MainSheet.Overpowered)
+                    output *= OverpowerDamageMultiplier;
+                if (MainSheet.Hot)
+                    output *= HeatDamageMultiplier;
+                return output;
+            }
+            set
+            {
+                _damagePhysical = value;
+            }
+        }
+        public decimal DamageThermal
+        {
+            get
+            {
+                decimal output = _damageThermal;
+                if (MainSheet.Overclocked)
+                    output *= OverclockDamageMultiplier;
+                if (MainSheet.Overpowered)
+                    output *= OverpowerDamageMultiplier;
+                if (MainSheet.Hot)
+                    output *= HeatDamageMultiplier;
+                return output;
+            }
+            set
+            {
+                _damageThermal = value;
+            }
+        }
         public decimal DamageTotal {
             get
             {
                 return DamageBiochemical + DamageDistortion + DamageEnergy + DamagePhysical + DamageThermal;
+            }
+        }
+        public decimal DamageSpecial
+        {
+            get
+            {
+                return DamageTotal * ProjectilesPerShot;
             }
         }
         public decimal DamagePerSecond
@@ -64,6 +178,13 @@ namespace Star_Citizen_Item_Viewer.Classes
             get
             {
                 return DamageTotal * Firerate;
+            }
+        }
+        public decimal DamagePerSecondSpecial
+        {
+            get
+            {
+                return DamageSpecial * Firerate;
             }
         }
         public int MaxRange
@@ -107,6 +228,21 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
         }
 
+        public decimal OverpowerFirerateMultiplier = 1;
+        public decimal OverpowerDamageMultiplier = 1;
+        public decimal OverpowerAmmoCostMultiplier = 1;
+        public decimal OverpowerHeatMultiplier = 1;
+
+        public decimal OverclockFirerateMultiplier = 1;
+        public decimal OverclockDamageMultiplier = 1;
+        public decimal OverclockAmmoCostMultiplier = 1;
+        public decimal OverclockHeatMultiplier = 1;
+
+        public decimal HeatFirerateMultiplier = 1;
+        public decimal HeatDamageMultiplier = 1;
+        public decimal HeatAmmoCostMultiplier = 1;
+        public decimal HeatHeatMultiplier = 1;
+
         public Weapon(dynamic Json, string File)
         {
             Id = Json.__ref;
@@ -143,11 +279,20 @@ namespace Star_Citizen_Item_Viewer.Classes
             DamagePhysical += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
             DamageThermal += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
 
-            DamageBiochemical *= ProjectilesPerShot;
-            DamageDistortion *= ProjectilesPerShot;
-            DamageEnergy *= ProjectilesPerShot;
-            DamagePhysical *= ProjectilesPerShot;
-            DamageThermal *= ProjectilesPerShot;
+            OverclockFirerateMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.fireRateMultiplier;
+            OverclockDamageMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.damageMultiplier;
+            OverclockAmmoCostMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.ammoCostMultiplier;
+            OverclockHeatMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.heatGenerationMultiplier;
+
+            OverpowerFirerateMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.fireRateMultiplier;
+            OverpowerDamageMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.damageMultiplier;
+            OverpowerAmmoCostMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.ammoCostMultiplier;
+            OverpowerHeatMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.heatGenerationMultiplier;
+
+            HeatFirerateMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.fireRateMultiplier;
+            HeatDamageMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.damageMultiplier;
+            HeatAmmoCostMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.ammoCostMultiplier;
+            HeatHeatMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.heatGenerationMultiplier;
         }
 
         public static Dictionary<string,object> parseAll(string filePath)
@@ -179,7 +324,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                 new Column("Name", "Name", false),
                 new Column("Size", "Size", false),
                 new Column("Alpha Damage", "DamageTotal", true, true),
+                new Column("Special Damage", "DamageSpecial", true, true),
                 new Column("Damage Per Second", "DamagePerSecond", true, true, "N2"),
+                new Column("Special Damage Per Second", "DamagePerSecondSpecial", true, true, "N2"),
                 new Column("Firerate", "Firerate", true, true, "N2"),
                 new Column("Projectiles Per Shot", "ProjectilesPerShot", true, true),
                 new Column("Biochemical Damage", "DamageBiochemical", true, true),
