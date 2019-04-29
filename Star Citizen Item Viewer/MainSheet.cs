@@ -34,7 +34,6 @@ namespace Star_Citizen_Item_Viewer
         public MainSheet()
         {
             InitializeComponent();
-            this.Text = "Star Citizen Item Viewer";
             componentSelect.CheckBoxes = true;
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.AllowUserToDeleteRows = false;
@@ -63,7 +62,6 @@ namespace Star_Citizen_Item_Viewer
         private void Form1_Load(object sender, EventArgs e)
         {
             listBox1.SelectedIndex = 0;
-            Refresh();
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
