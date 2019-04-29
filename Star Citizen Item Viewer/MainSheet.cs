@@ -19,7 +19,7 @@ namespace Star_Citizen_Item_Viewer
 
         public static Dictionary<string, object> MasterData = new Dictionary<string, object>();
         private static string LastSelection = "";
-        private static string Selected = "Weapons";
+        private static string Selected = "";
 
         private static List<string[]> Downloads = Weapon.GetDownloadInfo(FilePath);
 
@@ -66,10 +66,13 @@ namespace Star_Citizen_Item_Viewer
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            LastSelection = Selected;
             Selected = (string)listBox1.SelectedItem;
-            label1.Text = Selected;
             if (Selected != LastSelection)
+            {
+                label1.Text = Selected;
                 Refresh();
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
