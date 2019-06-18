@@ -201,7 +201,7 @@ namespace Star_Citizen_Item_Viewer
                     Task.Run(() =>
                     {
                         MasterData = Weapon.parseAll(FilePath + "\\weapons");
-                        Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
+                        //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Weapon.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
@@ -229,7 +229,7 @@ namespace Star_Citizen_Item_Viewer
                     Task.Run(() =>
                     {
                         MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
-                        Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
+                        //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Gun.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
@@ -249,7 +249,7 @@ namespace Star_Citizen_Item_Viewer
                     Task.Run(() =>
                     {
                         MasterData = Armor.parseAll(FilePath + "\\Armor");
-                        Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
+                        //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Armor.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {

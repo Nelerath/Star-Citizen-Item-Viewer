@@ -58,9 +58,9 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public Color Color { get; set; }
 
-        public Series GetNewSeries()
+        public Series GetNewSeries(string OverrideName = null)
         {
-            Series s = new Series(Name);
+            Series s = new Series(OverrideName ?? Name);
             s.ChartType = SeriesChartType.Line;
             s.BorderWidth = 3;
             s.MarkerStyle = MarkerStyle.Circle;

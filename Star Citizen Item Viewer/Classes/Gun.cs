@@ -287,7 +287,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                     int dataCount = Data.Count;
                     if (g.SingleFirerate > 0)
                     {
-                        Series s = g.GetNewSeries();
+                        Series s = g.GetNewSeries(g.Name + " Single Fire");
                         s.BorderDashStyle = ChartDashStyle.Dot;
                         decimal[] x = new decimal[Ticks + 1];
                         decimal[] y = new decimal[Ticks + 1];
@@ -305,7 +305,7 @@ namespace Star_Citizen_Item_Viewer.Classes
 
                     if (g.RapidFirerate > 0)
                     {
-                        Series s = g.GetNewSeries();
+                        Series s = g.GetNewSeries(g.Name + " Rapid Fire");
                         decimal[] x = new decimal[Ticks + 1];
                         decimal[] y = new decimal[Ticks + 1];
                         for (int i = 0; i <= Ticks; i++)
@@ -322,7 +322,7 @@ namespace Star_Citizen_Item_Viewer.Classes
 
                     if (g.BurstFirerate > 0)
                     {
-                        Series s = g.GetNewSeries();
+                        Series s = g.GetNewSeries(g.Name + " Burst Fire");
                         s.BorderDashStyle = ChartDashStyle.Dash;
                     }
                 });
