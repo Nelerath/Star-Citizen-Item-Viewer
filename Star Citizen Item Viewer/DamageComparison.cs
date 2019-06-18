@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -31,6 +32,8 @@ namespace Star_Citizen_Item_Viewer
             DrawGraph(5, Source.Token);
             chart1.ChartAreas[0].AxisX.Minimum = 0;
         }
+
+        
 
         private void DrawGraph(int Ticks, CancellationToken Token)
         {

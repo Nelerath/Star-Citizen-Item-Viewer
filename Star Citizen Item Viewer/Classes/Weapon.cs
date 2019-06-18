@@ -365,7 +365,7 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public static TreeNode[] BuildTree(object[] Items)
         {
-            Dictionary<string, TreeNode> tree = new Dictionary<string, TreeNode>();
+            Dictionary<string, List<TreeNode>> tree = new Dictionary<string, List<TreeNode>>();
             foreach (Item item in Items)
             {
                 TreeNode n = new TreeNode();
@@ -374,14 +374,14 @@ namespace Star_Citizen_Item_Viewer.Classes
 
                 string key = item.Size.ToString();
                 if (tree.ContainsKey(key))
-                    tree[key].Nodes.Add(n);
+                    tree[key].Add(n);
                 else
-                    tree.Add(key, new TreeNode(key, new TreeNode[] { n }));
+                    tree.Add(key, new List<TreeNode>() { n });
             }
             List<TreeNode> output = new List<TreeNode>();
             foreach (var key in tree.Keys.OrderBy(x => Convert.ToInt16(x)))
             {
-                output.Add(tree[key]);
+                output.Add(new TreeNode(key, tree[key].OrderBy(x => x.Text).ToArray()));
             }
             return output.ToArray();
         }
@@ -395,7 +395,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Weapon w = (Weapon)item;
-                    Series s = GetNewSeries(w.Name);
+                    Series s = w.GetNewSeries();
 
                     decimal[] x = new decimal[Ticks + 1];
                     decimal[] y = new decimal[Ticks + 1];

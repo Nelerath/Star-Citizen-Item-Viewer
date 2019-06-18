@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -251,7 +252,7 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public static TreeNode[] BuildTree(object[] Items)
         {
-            Dictionary<string, TreeNode> tree = new Dictionary<string, TreeNode>();
+            Dictionary<string, List<TreeNode>> tree = new Dictionary<string, List<TreeNode>>();
             foreach (Item item in Items)
             {
                 TreeNode n = new TreeNode();
@@ -260,18 +261,20 @@ namespace Star_Citizen_Item_Viewer.Classes
 
                 string key = item.Size.ToString();
                 if (tree.ContainsKey(key))
-                    tree[key].Nodes.Add(n);
+                    tree[key].Add(n);
                 else
-                    tree.Add(key, new TreeNode(key, new TreeNode[] { n }));
+                    tree.Add(key, new List<TreeNode>() { n });
             }
             List<TreeNode> output = new List<TreeNode>();
             foreach (var key in tree.Keys.OrderBy(x => Convert.ToInt16(x)))
             {
-                output.Add(tree[key]);
+                output.Add(new TreeNode(key, tree[key].OrderBy(x => x.Text).ToArray()));
             }
             return output.ToArray();
         }
 
+
+        private static decimal TickSeconds = .01M;
         public static List<Series> Calculator(List<object> Data, int Ticks, CancellationToken Token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
@@ -284,13 +287,14 @@ namespace Star_Citizen_Item_Viewer.Classes
                     int dataCount = Data.Count;
                     if (g.SingleFirerate > 0)
                     {
-                        Series s = GetNewSeries(g.Name + " Single");
+                        Series s = g.GetNewSeries();
+                        s.BorderDashStyle = ChartDashStyle.Dot;
                         decimal[] x = new decimal[Ticks + 1];
                         decimal[] y = new decimal[Ticks + 1];
                         for (int i = 0; i <= Ticks; i++)
                         {
-                            x[i] = i * .05M;
-                            y[i] = g.DamageTotal + (g.DamageTotal * Math.Floor((i * .05M) / (1M / g.SingleFirerate)));
+                            x[i] = i * TickSeconds;
+                            y[i] = g.DamageTotal + (g.DamageTotal * Math.Floor((i * TickSeconds) / (1M / g.SingleFirerate)));
                             if (options.CancellationToken.IsCancellationRequested)
                                 loopState.Break();
                         }
@@ -301,13 +305,13 @@ namespace Star_Citizen_Item_Viewer.Classes
 
                     if (g.RapidFirerate > 0)
                     {
-                        Series s = GetNewSeries(g.Name + " Auto");
+                        Series s = g.GetNewSeries();
                         decimal[] x = new decimal[Ticks + 1];
                         decimal[] y = new decimal[Ticks + 1];
                         for (int i = 0; i <= Ticks; i++)
                         {
-                            x[i] = i * .05M;
-                            y[i] = g.DamageTotal + (g.DamageTotal * Math.Floor((i * .05M) / (1M / g.RapidFirerate)));
+                            x[i] = i * TickSeconds;
+                            y[i] = g.DamageTotal + (g.DamageTotal * Math.Floor((i * TickSeconds) / (1M / g.RapidFirerate)));
                             if (options.CancellationToken.IsCancellationRequested)
                                 loopState.Break();
                         }
@@ -318,12 +322,63 @@ namespace Star_Citizen_Item_Viewer.Classes
 
                     if (g.BurstFirerate > 0)
                     {
-                        Series s = GetNewSeries(g.Name + " Burst");
+                        Series s = g.GetNewSeries();
+                        s.BorderDashStyle = ChartDashStyle.Dash;
                     }
                 });
             }
             catch (OperationCanceledException) { }
-            return new List<Series>(list).OrderBy(x => x.Name).ToList();
+            return new List<Series>(list).OrderBy(x => x.Name).Concat(DrawKillLines(Ticks)).ToList();
+        }
+
+        private static List<Series> DrawKillLines(int Ticks)
+        {
+            List<Series> output = new List<Series>();
+            foreach (var bodyPart in new string[] { "Head", "Torso" })
+            {
+                Color color;
+                decimal health = 0;
+                if (bodyPart == "Head")
+                {
+                    health = 10M / 1.5M;
+                    color = Color.Red;
+                }
+                else
+                {
+                    health = 20M;
+                    color = Color.Yellow;
+                }
+                foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
+                {
+                    switch (armor)
+                    {
+                        case "Light": health /= .8M; break;
+                        case "Medium": health /= .7M; break;
+                        case "Heavy": health /= .6M; break;
+                        default: break;
+                    }
+
+                    decimal[] x = new decimal[Ticks + 1];
+                    decimal[] y = new decimal[Ticks + 1];
+                    for (int i = 0; i <= Ticks; i++)
+                    {
+                        x[i] = i * TickSeconds;
+                        y[i] = health;
+                    }
+
+                    Series s = new Series(armor + " " + bodyPart);
+                    s.ChartType = SeriesChartType.Line;
+                    s.BorderWidth = 2;
+                    s.MarkerStyle = MarkerStyle.Circle;
+                    s.BorderDashStyle = ChartDashStyle.Solid;
+                    s.IsValueShownAsLabel = false;
+                    s.Color = color;
+                    s.Points.DataBindXY(x, y);
+                    output.Add(s);
+                }
+            }
+
+            return output;
         }
     }
 

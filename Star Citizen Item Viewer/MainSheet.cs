@@ -124,7 +124,8 @@ namespace Star_Citizen_Item_Viewer
                 {
                     foreach (TreeNode node in e.Node.Nodes)
                     {
-                        node.Checked = true;
+                        if (!node.Checked)
+                            node.Checked = true;
                     }
                 }
                 else
@@ -139,7 +140,8 @@ namespace Star_Citizen_Item_Viewer
                 {
                     foreach (TreeNode node in e.Node.Nodes)
                     {
-                        node.Checked = false;
+                        if (node.Checked)
+                            node.Checked = false;
                     }
                 }
                 else
@@ -192,12 +194,14 @@ namespace Star_Citizen_Item_Viewer
         private void Refresh()
         {
             componentSelect.Nodes.Clear();
+            Data.Clear();
             switch (Selected)
             {
                 case "Weapons":
                     Task.Run(() =>
                     {
                         MasterData = Weapon.parseAll(FilePath + "\\weapons");
+                        Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Weapon.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
@@ -225,6 +229,7 @@ namespace Star_Citizen_Item_Viewer
                     Task.Run(() =>
                     {
                         MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
+                        Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Gun.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
@@ -244,6 +249,7 @@ namespace Star_Citizen_Item_Viewer
                     Task.Run(() =>
                     {
                         MasterData = Armor.parseAll(FilePath + "\\Armor");
+                        Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Armor.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
@@ -259,6 +265,7 @@ namespace Star_Citizen_Item_Viewer
                     HotCheckbox.Enabled = false;
                     break;
             }
+            
             //Dictionary<int, TreeNode> sizes = new Dictionary<int, TreeNode>();
             //foreach (Item weapon in MasterData.Values)
             //{

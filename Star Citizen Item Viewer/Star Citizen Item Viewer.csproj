@@ -80,6 +80,7 @@
     <Compile Include="Classes\Armor.cs" />
     <Compile Include="Classes\Gun.cs" />
     <Compile Include="Classes\Item.cs" />
+    <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\Weapon.cs" />
     <Compile Include="DamageComparison.cs">
       <SubType>Form</SubType>

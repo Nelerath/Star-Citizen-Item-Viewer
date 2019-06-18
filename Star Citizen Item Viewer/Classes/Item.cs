@@ -1,4 +1,6 @@
 ﻿
+using System;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -54,13 +56,19 @@ namespace Star_Citizen_Item_Viewer.Classes
         public ItemGrades Grade { get; set; }
         public ItemClassifications Classification { get; set; }
 
-        public static Series GetNewSeries(string Name)
+        public Color Color { get; set; }
+
+        public Series GetNewSeries()
         {
             Series s = new Series(Name);
             s.ChartType = SeriesChartType.Line;
             s.BorderWidth = 3;
             s.MarkerStyle = MarkerStyle.Circle;
             s.IsValueShownAsLabel = false;
+            // I tried to make the colors deterministic by item so that reading the chart is easier.
+            // Unfortunately, at time of writing there are 85 distinct ship weapons alone, assigning them all a unique color is basically impossible.
+            // So this is commented out until I somehow invent new colors
+            //s.Color = Color; 
             return s;
         }
     }
