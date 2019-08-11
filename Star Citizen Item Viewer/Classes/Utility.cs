@@ -4,31 +4,26 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer.Classes
 {
     class Utility
     {
-        public static void AssignColors(List<object> Data)
+        public static void AssignColors(List<Series> Series)
         {
-            Data.OrderBy(x =>
-            {
-                Item i = (Item)x;
-                return i.Id;
-            });
-            int l = Data.Count;
-            int increment = 255 / l;
-            Item item;
+            Series.OrderBy(x => x.Name);
+            int l = Series.Count;
+            int increment = 255 / (l - 1);
             for (int i = 0; i < l; i++)
             {
-                item = (Item)Data[i];
-                item.Color = GetColor(item.Id);
-                //item.Color = ColorFromHSV(i * increment, 1, 1);
+                Series[i].Color = ColorFromHSV(i * increment, 1, 1);
             }
         }
 
         public static Color ColorFromHSV(double hue, double saturation, double value)
         {
+            int alpha = 125;
             int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
             double f = hue / 60 - Math.Floor(hue / 60);
 
@@ -39,17 +34,17 @@ namespace Star_Citizen_Item_Viewer.Classes
             int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
 
             if (hi == 0)
-                return Color.FromArgb(255, v, t, p);
+                return Color.FromArgb(alpha, v, t, p);
             else if (hi == 1)
-                return Color.FromArgb(255, q, v, p);
+                return Color.FromArgb(alpha, q, v, p);
             else if (hi == 2)
-                return Color.FromArgb(255, p, v, t);
+                return Color.FromArgb(alpha, p, v, t);
             else if (hi == 3)
-                return Color.FromArgb(255, p, q, v);
+                return Color.FromArgb(alpha, p, q, v);
             else if (hi == 4)
-                return Color.FromArgb(255, t, p, v);
+                return Color.FromArgb(alpha, t, p, v);
             else
-                return Color.FromArgb(255, v, p, q);
+                return Color.FromArgb(alpha, v, p, q);
         }
 
         private static Color GetColor(string Id)
@@ -66,6 +61,25 @@ namespace Star_Citizen_Item_Viewer.Classes
                 x += (Convert.ToInt32(c) - 60) * 4;
             }
             return x > 255 ? 255 : x < 0 ? 0 : x;
+        }
+
+        public static double GetRank(decimal X, decimal Max, bool HighToLow = true)
+        {
+            if (HighToLow)
+            {
+                if (Max == 0)
+                    return 0;
+                else
+                    return (double)Math.Floor((X / Max) * 100);
+            }
+            else
+            {
+                if (X == 0)
+                    return 100;
+                else
+                    return (double)Math.Floor((Max / X) * 100);
+            }
+            
         }
     }
 }

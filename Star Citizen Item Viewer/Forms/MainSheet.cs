@@ -1,4 +1,5 @@
 ﻿using Star_Citizen_Item_Viewer.Classes;
+using Star_Citizen_Item_Viewer.Forms;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -25,7 +26,9 @@ namespace Star_Citizen_Item_Viewer
 
         private static List<object> Data = new List<object>();
         private static Column[] Columns = Weapon.GetColumns();
-        private static Func<List<object>, int, CancellationToken, List<Series>> GraphCalculator = Weapon.Calculator;
+        private static Func<List<object>, int, CancellationToken, List<Series>> LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
+        private static Func<List<object>, CancellationToken, List<Series>> RadarGraphSeriesCreator = Weapon.CreateRadarGraphSeries;
+        private static List<CustomLabel> RadarLabels = Weapon.RadarLabels();
 
         public static bool Overclocked = false;
         public static bool Overpowered = false;
@@ -81,8 +84,8 @@ namespace Star_Citizen_Item_Viewer
             progressBar1.Step = 100 / Downloads.Count;
             progressBar1.Visible = true;
 
-            bool displayGrid = DisplayGrid.Enabled;
-            DisplayGrid.Enabled = false;
+            bool displayGrid = damageOutput.Enabled;
+            damageOutput.Enabled = false;
             componentSelect.Enabled = false;
             button1.Enabled = false;
             
@@ -99,7 +102,7 @@ namespace Star_Citizen_Item_Viewer
                 {
                     Refresh();
                     progressBar1.Visible = false;
-                    DisplayGrid.Enabled = displayGrid;
+                    damageOutput.Enabled = displayGrid;
                     componentSelect.Enabled = true;
                     button1.Enabled = true;
                 };
@@ -107,11 +110,20 @@ namespace Star_Citizen_Item_Viewer
             });
         }
 
-        private void DisplayGrid_Click(object sender, EventArgs e)
+        private void damageOutput_Click(object sender, EventArgs e)
         {
             Task.Run(() =>
             {
-                DamageComparison view = new DamageComparison(Data, GraphCalculator);
+                DamageComparison view = new DamageComparison(Data, LineGraphSeriesCreator);
+                view.ShowDialog();
+            });
+        }
+
+        private void radarComparison_Click(object sender, EventArgs e)
+        {
+            Task.Run(() =>
+            {
+                RadarChart view = new RadarChart(Data, RadarGraphSeriesCreator, RadarLabels);
                 view.ShowDialog();
             });
         }
@@ -211,19 +223,21 @@ namespace Star_Citizen_Item_Viewer
                     });
                     Columns = Weapon.GetColumns();
                     Downloads = Weapon.GetDownloadInfo(FilePath);
-                    GraphCalculator = Weapon.Calculator;
-                    DisplayGrid.Enabled = true;
+                    LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
+                    RadarGraphSeriesCreator = Weapon.CreateRadarGraphSeries;
+                    RadarLabels = Weapon.RadarLabels();
+                    damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = true;
                     OverpoweredCheckbox.Enabled = true;
                     HotCheckbox.Enabled = true;
                     break;
                 case "Power Plants":
                     MasterData = new Dictionary<string, object>();
-                    DisplayGrid.Enabled = false;
+                    damageOutput.Enabled = false;
                     break;
                 case "Coolers":
                     MasterData = new Dictionary<string, object>();
-                    DisplayGrid.Enabled = false;
+                    damageOutput.Enabled = false;
                     break;
                 case "Guns":
                     Task.Run(() =>
@@ -239,8 +253,10 @@ namespace Star_Citizen_Item_Viewer
                     });
                     Columns = Gun.GetColumns();
                     Downloads = Gun.GetDownloadInfo(FilePath);
-                    GraphCalculator = Gun.Calculator;
-                    DisplayGrid.Enabled = true;
+                    LineGraphSeriesCreator = Gun.CreateLineGraphSeries;
+                    RadarGraphSeriesCreator = Gun.CreateRadarGraphSeries;
+                    RadarLabels = Gun.RadarLabels();
+                    damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = false;
                     OverpoweredCheckbox.Enabled = false;
                     HotCheckbox.Enabled = false;
@@ -259,7 +275,7 @@ namespace Star_Citizen_Item_Viewer
                     });
                     Columns = Armor.GetColumns();
                     Downloads = Armor.GetDownloadInfo(FilePath);
-                    DisplayGrid.Enabled = false;
+                    damageOutput.Enabled = false;
                     OverclockedCheckbox.Enabled = false;
                     OverpoweredCheckbox.Enabled = false;
                     HotCheckbox.Enabled = false;
@@ -439,6 +455,8 @@ namespace Star_Citizen_Item_Viewer
                 return Color.FromArgb(r, g, 0);
 
         }
+
+        
     }
 
     public class Column

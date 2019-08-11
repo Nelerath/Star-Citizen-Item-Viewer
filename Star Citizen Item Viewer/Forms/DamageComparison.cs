@@ -20,16 +20,16 @@ namespace Star_Citizen_Item_Viewer
 
         private bool LabelsDisplayed = false;
 
-        public DamageComparison(List<object> Data, Func<List<object>, int, CancellationToken, List<Series>> Calculator)
+        public DamageComparison(List<object> Data, Func<List<object>, int, CancellationToken, List<Series>> CreateSeries)
         {
             InitializeComponent();
             if (!this.IsHandleCreated)
             {
                 this.CreateHandle();
             }
-            CalculateSeries = Calculator;
+            CalculateSeries = CreateSeries;
             DataSeries = Data;
-            DrawGraph(5, Source.Token);
+            DrawGraph(trackBar1.Value * 10, Source.Token);
             chart1.ChartAreas[0].AxisX.Minimum = 0;
         }
 

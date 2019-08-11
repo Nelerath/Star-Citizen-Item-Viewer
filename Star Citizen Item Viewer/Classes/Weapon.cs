@@ -209,6 +209,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
         }
 
+        public decimal MinSpread { get; set; }
         public decimal MaxSpread { get; set; }
         public decimal InitialSpread { get; set; }
         public decimal SpreadGrowth { get; set; }
@@ -224,7 +225,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         {
             get
             {
-                return SpreadPerSecond != 0 && (MaxSpread-InitialSpread) / SpreadPerSecond >= 0 ? (MaxSpread - InitialSpread) / SpreadPerSecond : 999;
+                return SpreadPerSecond != 0 && (MaxSpread-MinSpread) / SpreadPerSecond >= 0 ? (MaxSpread - MinSpread) / SpreadPerSecond : 999;
             }
         }
 
@@ -259,6 +260,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             PowerBase = Json.Components.EntityComponentPowerConnection.PowerBase;
             PowerDraw = Json.Components.EntityComponentPowerConnection.PowerDraw;
 
+            MinSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.min;
             MaxSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.max;
             InitialSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.firstAttack;
             SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.attack;
@@ -342,6 +344,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 //new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
                 new Column("Projectile Velocity", "Speed", true, true),
                 new Column("Max Range", "MaxRange", true, true),
+                new Column("Min Spread", "MinSpread", true, false, "N3"),
                 new Column("Max Spread", "MaxSpread", true, false, "N3"),
                 new Column("Initial Spread", "InitialSpread", true, false, "N3"),
                 new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
@@ -386,7 +389,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             return output.ToArray();
         }
 
-        public static List<Series> Calculator(List<object> Data, int Ticks, CancellationToken Token)
+        public static List<Series> CreateLineGraphSeries(List<object> Data, int Ticks, CancellationToken Token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
@@ -395,7 +398,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Weapon w = (Weapon)item;
-                    Series s = w.GetNewSeries();
+                    Series s = w.GetNewLineGraphSeries();
 
                     decimal[] x = new decimal[Ticks + 1];
                     decimal[] y = new decimal[Ticks + 1];
@@ -417,6 +420,81 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
             catch (OperationCanceledException) { }
             return new List<Series>(list).OrderBy(x => x.Name).ToList();
+        }
+
+        public static List<Series> CreateRadarGraphSeries(List<object> Data, CancellationToken Token)
+        {
+            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
+            decimal projectileSpeed = 0;
+            decimal damage = 0;
+            decimal firerate = 0;
+            decimal spreadMin = 99999999;
+            decimal spreadMax = 99999999;
+            decimal spreadInitial = 99999999;
+
+            foreach (Weapon item in Data)
+            {
+                projectileSpeed = Math.Max(item.Speed, projectileSpeed);
+                damage = Math.Max(item.DamageTotal, damage);
+                firerate = Math.Max(item.Firerate, firerate);
+
+                spreadMin = Math.Min(item.MaxSpread, spreadMin);
+                spreadMax = Math.Min(item.MaxSpread, spreadMax);
+                spreadInitial = Math.Min(item.InitialSpread, spreadInitial);
+            }
+
+            try
+            {
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
+                Parallel.ForEach(Data, options, (item, loopState) =>
+                {
+                    Weapon w = (Weapon)item;
+                    Series s = w.GetNewRadarGraphSeries();
+                    s.Points.Add(new DataPoint(0, Utility.GetRank(w.Speed, projectileSpeed)));
+                    s.Points.Add(new DataPoint(0, Utility.GetRank(w.DamageTotal, damage)));
+
+                    s.Points.Add(new DataPoint(0, Utility.GetRank(w.Firerate, firerate)));
+                    s.Points.Add(new DataPoint(0, Utility.GetRank(w.MinSpread, spreadMin, false)));
+                    s.Points.Add(new DataPoint(0, Utility.GetRank(w.MaxSpread, spreadMax, false)));
+                    s.Points.Add(new DataPoint(0, Utility.GetRank(w.InitialSpread, spreadInitial, false)));
+                    list.Enqueue(s);
+                });
+            }
+            catch (OperationCanceledException) { }
+            return new List<Series>(list).OrderBy(x => x.Name).ToList();
+        }
+
+        public static List<CustomLabel> RadarLabels()
+        {
+            List<CustomLabel> output = new List<CustomLabel>();
+            CustomLabel customLabel1 = new CustomLabel();
+            CustomLabel customLabel2 = new CustomLabel();
+            CustomLabel customLabel3 = new CustomLabel();
+            CustomLabel customLabel4 = new CustomLabel();
+            CustomLabel customLabel5 = new CustomLabel();
+            CustomLabel customLabel6 = new CustomLabel();
+            CustomLabel customLabel7 = new CustomLabel();
+            customLabel1.ForeColor = System.Drawing.Color.White;
+            customLabel1.Text = "Projectile Speed";
+            customLabel2.ForeColor = System.Drawing.Color.White;
+            customLabel2.Text = "Damage";
+            customLabel3.ForeColor = System.Drawing.Color.White;
+            customLabel3.Text = "Firerate";
+            customLabel4.ForeColor = System.Drawing.Color.White;
+            customLabel4.Text = "Minimum Spread";
+            customLabel5.ForeColor = System.Drawing.Color.White;
+            customLabel5.Text = "Maximum Spread";
+            customLabel6.ForeColor = System.Drawing.Color.White;
+            customLabel6.Text = "Initial Spread";
+            customLabel7.ForeColor = System.Drawing.Color.White;
+            output.Add(customLabel1);
+            output.Add(customLabel2);
+            output.Add(customLabel3);
+            output.Add(customLabel4);
+            output.Add(customLabel5);
+            output.Add(customLabel6);
+            output.Add(customLabel7);
+            return output;
         }
     }
 }

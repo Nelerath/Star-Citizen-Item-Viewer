@@ -82,25 +82,34 @@
     <Compile Include="Classes\Item.cs" />
     <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\Weapon.cs" />
-    <Compile Include="DamageComparison.cs">
+    <Compile Include="Forms\DamageComparison.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DamageComparison.Designer.cs">
+    <Compile Include="Forms\DamageComparison.Designer.cs">
       <DependentUpon>DamageComparison.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainSheet.cs">
+    <Compile Include="Forms\MainSheet.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainSheet.Designer.cs">
+    <Compile Include="Forms\MainSheet.Designer.cs">
       <DependentUpon>MainSheet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\RadarChart.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RadarChart.Designer.cs">
+      <DependentUpon>RadarChart.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="DamageComparison.resx">
+    <EmbeddedResource Include="Forms\DamageComparison.resx">
       <DependentUpon>DamageComparison.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainSheet.resx">
+    <EmbeddedResource Include="Forms\MainSheet.resx">
       <DependentUpon>MainSheet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RadarChart.resx">
+      <DependentUpon>RadarChart.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

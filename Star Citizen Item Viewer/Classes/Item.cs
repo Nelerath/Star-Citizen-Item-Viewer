@@ -58,17 +58,27 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public Color Color { get; set; }
 
-        public Series GetNewSeries(string OverrideName = null)
+        public Series GetNewLineGraphSeries(string OverrideName = null)
         {
             Series s = new Series(OverrideName ?? Name);
-            s.ChartType = SeriesChartType.Line;
-            s.BorderWidth = 3;
+            s.ChartType = SeriesChartType.StepLine;
+            s.BorderWidth = 4;
             s.MarkerStyle = MarkerStyle.Circle;
             s.IsValueShownAsLabel = false;
             // I tried to make the colors deterministic by item so that reading the chart is easier.
             // Unfortunately, at time of writing there are 85 distinct ship weapons alone, assigning them all a unique color is basically impossible.
             // So this is commented out until I somehow invent new colors
             //s.Color = Color; 
+            return s;
+        }
+
+        public Series GetNewRadarGraphSeries(string OverrideName = null)
+        {
+            Series s = new Series(OverrideName ?? Name);
+            s.ChartType = SeriesChartType.Radar;
+            s.CustomProperties = "AreaDrawingStyle=Polygon";
+            s.BorderWidth = 5;
+            //s.IsValueShownAsLabel = true;
             return s;
         }
     }
