@@ -432,12 +432,15 @@ namespace Star_Citizen_Item_Viewer.Classes
             decimal spreadMin = 99999999;
             decimal spreadMax = 99999999;
             decimal spreadInitial = 99999999;
+
+            decimal TTK = 9999;
             // Weight
             // Damage
             // Firerate
             // SpreadMin
             // SpreadMax
             // InitialSpread
+            // TTK
 
 
             // Nice to haves
@@ -462,16 +465,21 @@ namespace Star_Citizen_Item_Viewer.Classes
                     spreadMin = Math.Min(item.RapidMinSpread, spreadMin);
                     spreadMax = Math.Min(item.RapidMaxSpread, spreadMax);
                     spreadInitial = Math.Min(item.RapidInitialSpread, spreadInitial);
+
+                    TTK = Math.Min(CalculateAverageTTK(item.DamageTotal, item.RapidFirerate), TTK);
                 }
 
-                if (item.BurstFirerate > 0)
-                {
-                    firerate = Math.Max(item.BurstFirerate, firerate);
-                
-                    spreadMin = Math.Min(item.BurstMinSpread, spreadMin);
-                    spreadMax = Math.Min(item.BurstMaxSpread, spreadMax);
-                    spreadInitial = Math.Min(item.BurstInitialSpread, spreadInitial);
-                }
+                // Burstfire is fucked
+                //if (item.BurstFirerate > 0)
+                //{
+                //    firerate = Math.Max(item.BurstFirerate, firerate);
+                //
+                //    spreadMin = Math.Min(item.BurstMinSpread, spreadMin);
+                //    spreadMax = Math.Min(item.BurstMaxSpread, spreadMax);
+                //    spreadInitial = Math.Min(item.BurstInitialSpread, spreadInitial);
+                //
+                //    TTK = Math.Min(CalculateAverageTTK(item.DamageTotal, item.BurstFirerate), TTK);
+                //}
                 
                 if (item.SingleFirerate > 0)
                 {
@@ -480,6 +488,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                     spreadMin = Math.Min(item.SingleMinSpread, spreadMin);
                     spreadMax = Math.Min(item.SingleMaxSpread, spreadMax);
                     spreadInitial = Math.Min(item.SingleInitialSpread, spreadInitial);
+
+                    TTK = Math.Min(CalculateAverageTTK(item.DamageTotal, item.SingleFirerate), TTK);
                 }
             }
             try
@@ -505,22 +515,29 @@ namespace Star_Citizen_Item_Viewer.Classes
                         s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidMinSpread, spreadMin, false)));
                         s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidMaxSpread, spreadMax, false)));
                         s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidInitialSpread , spreadInitial, false)));
+
+                        s.Points.Add(new DataPoint(0, Utility.GetRank(CalculateAverageTTK(g.DamageTotal, g.RapidFirerate), TTK, false)));
+
                         list.Enqueue(s);
                     }
 
-                    if (g.BurstFirerate > 0)
-                    {
-                        Series s = g.GetNewRadarGraphSeries(g.Name + " Burst");
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.Weight, weight, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.DamageTotal, damage)));
+                    // Burst is fucked
+                    //if (g.BurstFirerate > 0)
+                    //{
+                    //    Series s = g.GetNewRadarGraphSeries(g.Name + " Burst");
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.Weight, weight, false)));
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.DamageTotal, damage)));
+                    //
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstFirerate, firerate)));
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstMinSpread, spreadMin, false)));
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstMaxSpread, spreadMax, false)));
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstInitialSpread, spreadInitial, false)));
+                    //
+                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(CalculateAverageTTK(g.DamageTotal, g.BurstFirerate), TTK, false)));
+                    //
+                    //    list.Enqueue(s);
+                    //}
 
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstFirerate, firerate)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstMinSpread, spreadMin, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstMaxSpread, spreadMax, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstInitialSpread, spreadInitial, false)));
-                        list.Enqueue(s);
-                    }
-                    
                     if (g.SingleFirerate > 0)
                     {
                         Series s = g.GetNewRadarGraphSeries(g.Name + " Single");
@@ -531,14 +548,45 @@ namespace Star_Citizen_Item_Viewer.Classes
                         s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleMinSpread, spreadMin, false)));
                         s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleMaxSpread, spreadMax, false)));
                         s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleInitialSpread, spreadInitial, false)));
+
+                        s.Points.Add(new DataPoint(0, Utility.GetRank(CalculateAverageTTK(g.DamageTotal, g.SingleFirerate), TTK, false)));
+
                         list.Enqueue(s);
                     }
-
-                    
                 });
             }
             catch (OperationCanceledException) { }
             return new List<Series>(list).OrderBy(x => x.Name).ToList();
+        }
+
+        private static decimal CalculateAverageTTK(decimal Damage, decimal ShotsPerSecond)
+        {
+            decimal[] ttks = new decimal[8];
+            int i = 0;
+            foreach (var bodyPart in new string[] { "Head", "Torso" })
+            {
+                decimal health = 0;
+                decimal armoredHealth = 0;
+                if (bodyPart == "Head")
+                    health = 10M / 1.5M;
+                else
+                    health = 20M;
+
+                foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
+                {
+                    switch (armor)
+                    {
+                        case "Light": armoredHealth = health / .8M; break;
+                        case "Medium": armoredHealth = health / .7M; break;
+                        case "Heavy": armoredHealth = health / .6M; break;
+                        default: armoredHealth = health; break;
+                    }
+
+                    ttks[i] = (Math.Ceiling(armoredHealth / Damage)-1) / ShotsPerSecond;
+                    i++;
+                }
+            }
+            return ttks.Average();
         }
 
         public static List<CustomLabel> RadarLabels()
@@ -551,6 +599,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             CustomLabel customLabel5 = new CustomLabel();
             CustomLabel customLabel6 = new CustomLabel();
             CustomLabel customLabel7 = new CustomLabel();
+            //CustomLabel customLabel8 = new CustomLabel();
             customLabel1.ForeColor = System.Drawing.Color.White;
             customLabel1.Text = "Weight";
             customLabel2.ForeColor = System.Drawing.Color.White;
@@ -564,6 +613,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             customLabel6.ForeColor = System.Drawing.Color.White;
             customLabel6.Text = "Initial Spread";
             customLabel7.ForeColor = System.Drawing.Color.White;
+            customLabel7.Text = "TTK";
             output.Add(customLabel1);
             output.Add(customLabel2);
             output.Add(customLabel3);
