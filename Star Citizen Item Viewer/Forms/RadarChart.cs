@@ -17,28 +17,18 @@ namespace Star_Citizen_Item_Viewer.Forms
     {
         private static CancellationTokenSource Source = new CancellationTokenSource();
 
-        public RadarChart(List<object> Data, Func<List<object>, CancellationToken, List<Series>> CreateSeries, List<CustomLabel> Labels)
+        public RadarChart(List<Series> series, List<CustomLabel> Labels)
         {
             InitializeComponent();
-            // Weight
-            // Damage
-            // Firerate
-            // SpreadMin
-            // SpreadMax
-            // InitialSpread
+            Utility.AssignColors(series);
             foreach (var item in Labels)
             {
                 Chart.ChartAreas[0].AxisX.CustomLabels.Add(item);
             }
 
-            List<Series> series = CreateSeries(Data, Source.Token);
-            if (series.Count > 0)
+            foreach (var s in series)
             {
-                Utility.AssignColors(series);
-                foreach (var s in series)
-                {
-                    Chart.Series.Add(s);
-                }
+                Chart.Series.Add(s);
             }
         }
     }

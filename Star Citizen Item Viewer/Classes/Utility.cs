@@ -14,7 +14,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         {
             Series.OrderBy(x => x.Name);
             int l = Series.Count;
-            int increment = 255 / (l - 1);
+            int increment = l == 1 ? 255 : 255 / (l - 1);
             for (int i = 0; i < l; i++)
             {
                 Series[i].Color = ColorFromHSV(i * increment, 1, 1);
@@ -63,23 +63,19 @@ namespace Star_Citizen_Item_Viewer.Classes
             return x > 255 ? 255 : x < 0 ? 0 : x;
         }
 
-        public static double GetRank(decimal X, decimal Max, bool HighToLow = true)
+        public static object GetValue(object obj, string field)
         {
-            if (HighToLow)
+            string[] path = field.Split('.');
+            if (path.Count() > 1)
             {
-                if (Max == 0)
-                    return 0;
+                var parentProp = obj.GetType().GetProperty(path[0])?.GetValue(obj);
+                if (parentProp != null)
+                    return parentProp.GetType().GetProperty(path[1]).GetValue(parentProp);
                 else
-                    return (double)Math.Floor((X / Max) * 100);
+                    return null;
             }
             else
-            {
-                if (X == 0)
-                    return 100;
-                else
-                    return (double)Math.Floor((Max / X) * 100);
-            }
-            
+                return obj.GetType().GetProperty(field).GetValue(obj);
         }
     }
 }

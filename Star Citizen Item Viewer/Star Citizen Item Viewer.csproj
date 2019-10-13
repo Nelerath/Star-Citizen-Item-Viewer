@@ -79,7 +79,11 @@
   <ItemGroup>
     <Compile Include="Classes\Armor.cs" />
     <Compile Include="Classes\Gun.cs" />
+    <Compile Include="Classes\IComponent.cs" />
     <Compile Include="Classes\Item.cs" />
+    <Compile Include="Classes\NewFolder1\GunFormWriter.cs" />
+    <Compile Include="Classes\NewFolder1\WeaponFormWriter.cs" />
+    <Compile Include="Classes\RankTracker.cs" />
     <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\Weapon.cs" />
     <Compile Include="Forms\DamageComparison.cs">
@@ -100,6 +104,12 @@
     <Compile Include="Forms\RadarChart.Designer.cs">
       <DependentUpon>RadarChart.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\RadarChartOptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RadarChartOptions.Designer.cs">
+      <DependentUpon>RadarChartOptions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\DamageComparison.resx">
@@ -110,6 +120,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\RadarChart.resx">
       <DependentUpon>RadarChart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RadarChartOptions.resx">
+      <DependentUpon>RadarChartOptions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

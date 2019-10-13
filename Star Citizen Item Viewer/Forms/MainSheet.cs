@@ -1,4 +1,5 @@
 ﻿using Star_Citizen_Item_Viewer.Classes;
+using Star_Citizen_Item_Viewer.Classes.NewFolder1;
 using Star_Citizen_Item_Viewer.Forms;
 using System;
 using System.Collections.Generic;
@@ -25,10 +26,11 @@ namespace Star_Citizen_Item_Viewer
         private static List<string[]> Downloads = Weapon.GetDownloadInfo(FilePath);
 
         private static List<object> Data = new List<object>();
-        private static Column[] Columns = Weapon.GetColumns();
+        private static Column[] Columns = new Column[0];
         private static Func<List<object>, int, CancellationToken, List<Series>> LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
-        private static Func<List<object>, CancellationToken, List<Series>> RadarGraphSeriesCreator = Weapon.CreateRadarGraphSeries;
         private static List<CustomLabel> RadarLabels = Weapon.RadarLabels();
+
+        private static IFormWriter Writer = new WeaponFormWriter();
 
         public static bool Overclocked = false;
         public static bool Overpowered = false;
@@ -64,6 +66,7 @@ namespace Star_Citizen_Item_Viewer
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Columns = Writer.GetColumns();
             listBox1.SelectedIndex = 0;
         }
 
@@ -123,7 +126,8 @@ namespace Star_Citizen_Item_Viewer
         {
             Task.Run(() =>
             {
-                RadarChart view = new RadarChart(Data, RadarGraphSeriesCreator, RadarLabels);
+                RadarChartOptions view = new RadarChartOptions(MasterData, Writer);
+                //RadarChart view = new RadarChart(Data, RadarGraphSeriesCreator, RadarLabels);
                 view.ShowDialog();
             });
         }
@@ -210,21 +214,21 @@ namespace Star_Citizen_Item_Viewer
             switch (Selected)
             {
                 case "Weapons":
+                    Writer = new WeaponFormWriter();
                     Task.Run(() =>
                     {
                         MasterData = Weapon.parseAll(FilePath + "\\weapons");
                         //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
-                        var tree = Weapon.BuildTree(MasterData.Values.ToArray());
+                        var tree = Writer.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
                             componentSelect.Nodes.AddRange(tree);
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Weapon.GetColumns();
+                    Columns = Writer.GetColumns();
                     Downloads = Weapon.GetDownloadInfo(FilePath);
                     LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
-                    RadarGraphSeriesCreator = Weapon.CreateRadarGraphSeries;
                     RadarLabels = Weapon.RadarLabels();
                     damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = true;
@@ -240,22 +244,21 @@ namespace Star_Citizen_Item_Viewer
                     damageOutput.Enabled = false;
                     break;
                 case "Guns":
+                    Writer = new GunFormWriter();
                     Task.Run(() =>
                     {
                         MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
                         //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
-                        var tree = Gun.BuildTree(MasterData.Values.ToArray());
+                        var tree = Writer.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
                             componentSelect.Nodes.AddRange(tree);
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Gun.GetColumns();
+                    Columns = Writer.GetColumns();
                     Downloads = Gun.GetDownloadInfo(FilePath);
                     LineGraphSeriesCreator = Gun.CreateLineGraphSeries;
-                    RadarGraphSeriesCreator = Gun.CreateRadarGraphSeries;
-                    RadarLabels = Gun.RadarLabels();
                     damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = false;
                     OverpoweredCheckbox.Enabled = false;
@@ -491,12 +494,12 @@ namespace Star_Citizen_Item_Viewer
             return -1;
         }
 
-        public static object Get(this object Obj, string Name)
+        public static object Get(this object obj, string field)
         {
-            if (string.IsNullOrEmpty(Name))
+            if (string.IsNullOrEmpty(field))
                 return null;
-            else
-                return Obj.GetType().GetProperty(Name).GetValue(Obj);
+
+            return Utility.GetValue(obj, field);
         }
     }
 }

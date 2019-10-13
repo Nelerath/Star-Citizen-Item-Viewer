@@ -50,6 +50,7 @@
             legend1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             legend1.ForeColor = System.Drawing.Color.White;
             legend1.IsTextAutoFit = false;
+            legend1.MaximumAutoSize = 20F;
             legend1.Name = "Legend1";
             this.Chart.Legends.Add(legend1);
             this.Chart.Location = new System.Drawing.Point(0, 0);
