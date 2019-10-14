@@ -10,7 +10,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
 {
-    public class GunFormWriter : RankTracker, IFormWriter
+    public class GunFormWriter : FormWriter
     {
         public GunFormWriter()
         {
@@ -61,7 +61,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             };
         }
 
-        public Column[] GetColumns()
+        public override Column[] GetColumns()
         {
             return new Column[] {
                 new Column("Id", "Id", false, false, "", false),
@@ -96,30 +96,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             };
         }
 
-        public TreeNode[] BuildTree(object[] Items)
-        {
-            Dictionary<string, List<TreeNode>> tree = new Dictionary<string, List<TreeNode>>();
-            foreach (Item item in Items)
-            {
-                TreeNode n = new TreeNode();
-                n.Name = item.Id;
-                n.Text = item.Name;
-
-                string key = item.Size.ToString();
-                if (tree.ContainsKey(key))
-                    tree[key].Add(n);
-                else
-                    tree.Add(key, new List<TreeNode>() { n });
-            }
-            List<TreeNode> output = new List<TreeNode>();
-            foreach (var key in tree.Keys.OrderBy(x => Convert.ToInt16(x)))
-            {
-                output.Add(new TreeNode(key, tree[key].OrderBy(x => x.Text).ToArray()));
-            }
-            return output.ToArray();
-        }
-
-        public List<Series> CreateRadarGraphSeries(List<object> Data, CancellationToken Token)
+        public override List<Series> CreateRadarGraphSeries(List<object> Data, CancellationToken Token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
@@ -146,7 +123,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             return new List<Series>(list).OrderBy(x => x.Name).ToList();
         }
 
-        public List<CustomLabel> RadarLabels()
+        public override List<CustomLabel> RadarLabels()
         {
             List<CustomLabel> output = new List<CustomLabel>();
             foreach (var field in Fields)
@@ -157,6 +134,17 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
                 output.Add(label);
             }
             return output;
+        }
+
+        public override List<string[]> GetDownloadInfo(string FilePath)
+        {
+            return new List<string[]>
+            {
+                new string[] { "http://starcitizendb.com/api/components/df/WeaponPersonal", FilePath + "\\guns" }
+                ,new string[] { "http://starcitizendb.com/api/ammo/energy", FilePath + "\\ammo" }
+                ,new string[] { "http://starcitizendb.com/api/ammo/projectile", FilePath + "\\ammo" }
+                ,new string[] { "http://starcitizendb.com/api/components/df/WeaponAttachment", FilePath + "\\attachments" }
+            };
         }
     }
 }

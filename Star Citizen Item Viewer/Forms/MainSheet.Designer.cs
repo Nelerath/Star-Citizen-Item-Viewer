@@ -36,13 +36,13 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.radarComparison = new System.Windows.Forms.Button();
             this.HotCheckbox = new System.Windows.Forms.CheckBox();
             this.OverpoweredCheckbox = new System.Windows.Forms.CheckBox();
             this.OverclockedCheckbox = new System.Windows.Forms.CheckBox();
             this.damageOutput = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.radarComparison = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -114,7 +114,8 @@
             this.listBox1.Items.AddRange(new object[] {
             "Weapons",
             "Guns",
-            "Armor"});
+            "Armor",
+            "Shields"});
             this.listBox1.Location = new System.Drawing.Point(229, 398);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(104, 84);
@@ -148,6 +149,16 @@
             this.splitContainer1.Size = new System.Drawing.Size(1104, 510);
             this.splitContainer1.SplitterDistance = 343;
             this.splitContainer1.TabIndex = 8;
+            // 
+            // radarComparison
+            // 
+            this.radarComparison.Location = new System.Drawing.Point(123, 398);
+            this.radarComparison.Name = "radarComparison";
+            this.radarComparison.Size = new System.Drawing.Size(100, 89);
+            this.radarComparison.TabIndex = 12;
+            this.radarComparison.Text = "Radar Comparison";
+            this.radarComparison.UseVisualStyleBackColor = true;
+            this.radarComparison.Click += new System.EventHandler(this.radarComparison_Click);
             // 
             // HotCheckbox
             // 
@@ -185,7 +196,7 @@
             // damageOutput
             // 
             this.damageOutput.Location = new System.Drawing.Point(12, 398);
-            this.damageOutput.Name = "DisplayGrid";
+            this.damageOutput.Name = "damageOutput";
             this.damageOutput.Size = new System.Drawing.Size(105, 89);
             this.damageOutput.TabIndex = 8;
             this.damageOutput.Text = "Damage Output";
@@ -219,16 +230,6 @@
             this.splitContainer2.Size = new System.Drawing.Size(1104, 539);
             this.splitContainer2.SplitterDistance = 510;
             this.splitContainer2.TabIndex = 9;
-            // 
-            // radarComparison
-            // 
-            this.radarComparison.Location = new System.Drawing.Point(123, 398);
-            this.radarComparison.Name = "radarComparison";
-            this.radarComparison.Size = new System.Drawing.Size(100, 89);
-            this.radarComparison.TabIndex = 12;
-            this.radarComparison.Text = "Radar Comparison";
-            this.radarComparison.UseVisualStyleBackColor = true;
-            this.radarComparison.Click += new System.EventHandler(this.radarComparison_Click);
             // 
             // MainSheet
             // 

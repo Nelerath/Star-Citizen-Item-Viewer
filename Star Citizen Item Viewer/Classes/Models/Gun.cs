@@ -215,56 +215,6 @@ namespace Star_Citizen_Item_Viewer.Classes
             return new Dictionary<string, object>(output);
         }
 
-        public static Column[] GetColumns()
-        {
-            return new Column[] {
-                new Column("Id", "Id", false, false, "", false),
-                new Column("Name", "Name", false),
-                new Column("Total Damage", "DamageTotal", true, true),
-                new Column("Special Damage", "DamageSpecial", true, true, "N2"),
-                new Column("Projectiles Per Shot", "ProjectilesPerShot", true, true),
-                new Column("Singleshot Firerate", "SingleFirerate", true, true, "N2"),
-                new Column("Burst Firerate", "BurstFirerate", true, true, "N2"),
-                new Column("Auto Firerate", "RapidFirerate", true, true, "N2"),
-                new Column("Biochemical Damage", "DamageBiochemical", true, true),
-                new Column("Distortion Damage", "DamageDistortion", true, true),
-                new Column("Energy Damage", "DamageEnergy", true, true),
-                new Column("Physical Damage", "DamagePhysical", true, true),
-                new Column("Thermal Damage", "DamageThermal", true, true),
-                //new Column("Damage Per Power", "DamagePerPower", true, true, "N2"),
-                //new Column("Damage Per Heat", "DamagePerHeat", true, true, "N2"),
-                //new Column("Power Per Shot", "PowerPerShot", true, false),
-                //new Column("Heat Per Shot", "HeatPerShot", true, false),
-                //new Column("Heat Per Second", "HeatPerSecond", true, false, "N2"),
-                //new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
-                new Column("Projectile Velocity", "Speed", true, true),
-                new Column("Max Range", "MaxRange", true, true),
-                new Column("Weight", "Weight", true, false, "N2"),
-                //new Column("Max Spread", "MaxSpread", true, false, "N3"),
-                //new Column("Initial Spread", "InitialSpread", true, false, "N3"),
-                //new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
-                //new Column("Spread Decay", "SpreadDecay", true, true, "N3"),
-                //new Column("Spread Per Second", "SpreadPerSecond", true, false, "N3"),
-                //new Column("Time Until Max Spread", "TimeUntilMaxSpread", true, true, "N3"),
-                new Column("Score", null, true, true, "N2", false),
-            };
-        }
-
-        public static List<string[]> GetDownloadInfo(string FilePath)
-        {
-            return new List<string[]>
-            {
-                new string[] { "http://starcitizendb.com/api/components/df/WeaponPersonal", FilePath + "\\guns" }
-                ,new string[] { "http://starcitizendb.com/api/ammo/energy", FilePath + "\\ammo" }
-                ,new string[] { "http://starcitizendb.com/api/ammo/projectile", FilePath + "\\ammo" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/WeaponAttachment", FilePath + "\\attachments" }
-                //,new string[] {"http://starcitizendb.com/api/components/df/PowerPlant", FilePath + "\\power plants"}
-                //,new string[] {"http://starcitizendb.com/api/components/df/Cooler", FilePath + "\\coolers"}
-                //,new string[] {"http://starcitizendb.com/api/components/df/Shield", FilePath + "\\shields"}
-            };
-        }
-
-
         private static decimal TickSeconds = .01M;
         public static List<Series> CreateLineGraphSeries(List<object> Data, int Ticks, CancellationToken Token)
         {

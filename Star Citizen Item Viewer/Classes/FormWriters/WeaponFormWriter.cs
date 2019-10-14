@@ -10,7 +10,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
 {
-    public class WeaponFormWriter : RankTracker, IFormWriter
+    public class WeaponFormWriter : FormWriter
     {
         public WeaponFormWriter()
         {
@@ -73,7 +73,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             };
         }
 
-        public Column[] GetColumns()
+        public override Column[] GetColumns()
         {
             return new Column[] {
                 new Column("Id", "Id", false, false, "", false),
@@ -109,61 +109,12 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             };
         }
 
-        public TreeNode[] BuildTree(object[] Items)
+        public List<string[]> GetDownloadInfo(string FilePath)
         {
-            Dictionary<string, List<TreeNode>> tree = new Dictionary<string, List<TreeNode>>();
-            foreach (Item item in Items)
+            return new List<string[]>
             {
-                TreeNode n = new TreeNode();
-                n.Name = item.Id;
-                n.Text = item.Name;
-
-                string key = item.Size.ToString();
-                if (tree.ContainsKey(key))
-                    tree[key].Add(n);
-                else
-                    tree.Add(key, new List<TreeNode>() { n });
-            }
-            List<TreeNode> output = new List<TreeNode>();
-            foreach (var key in tree.Keys.OrderBy(x => Convert.ToInt16(x)))
-            {
-                output.Add(new TreeNode(key, tree[key].OrderBy(x => x.Text).ToArray()));
-            }
-            return output.ToArray();
-        }
-
-        public List<Series> CreateRadarGraphSeries(List<object> Data, CancellationToken Token)
-        {
-            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
-            try
-            {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
-                Parallel.ForEach(Data, options, (item, loopState) =>
-                {
-                    Item i = (Item)item;
-                    Series s = i.GetNewRadarGraphSeries();
-                    foreach (var field in Fields)
-                    {
-                        s.Points.Add(new DataPoint(0, GetRank(field.DataFieldName, Convert.ToDouble(Utility.GetValue(item, field.DataFieldName)), field.SortDescending)));
-                    }
-                    list.Enqueue(s);
-                });
-            }
-            catch (OperationCanceledException) { }
-            return new List<Series>(list).OrderBy(x => x.Name).ToList();
-        }
-
-        public List<CustomLabel> RadarLabels()
-        {
-            List<CustomLabel> output = new List<CustomLabel>();
-            foreach (var field in Fields)
-            {
-                CustomLabel label = new CustomLabel();
-                label.ForeColor = System.Drawing.Color.White;
-                label.Text = field.DisplayFieldName;
-                output.Add(label);
-            }
-            return output;
+                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", FilePath + "\\weapons" }
+            };
         }
     }
 }

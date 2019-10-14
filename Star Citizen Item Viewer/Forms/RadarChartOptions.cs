@@ -14,11 +14,11 @@ namespace Star_Citizen_Item_Viewer.Forms
 {
     public partial class RadarChartOptions : Form
     {
-        private static IFormWriter Writer { get; set; }
+        private static FormWriter Writer { get; set; }
         private static Dictionary<string, object> Data { get; set; }
         private static CancellationTokenSource Source = new CancellationTokenSource();
 
-        public RadarChartOptions(Dictionary<string, object> data, IFormWriter writer)
+        public RadarChartOptions(Dictionary<string, object> data, FormWriter writer)
         {
             InitializeComponent();
             Writer = writer;

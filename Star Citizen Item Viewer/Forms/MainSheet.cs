@@ -23,14 +23,14 @@ namespace Star_Citizen_Item_Viewer
         private static string LastSelection = "";
         private static string Selected = "";
 
-        private static List<string[]> Downloads = Weapon.GetDownloadInfo(FilePath);
+        private static List<string[]> Downloads { get; set; }
 
         private static List<object> Data = new List<object>();
         private static Column[] Columns = new Column[0];
         private static Func<List<object>, int, CancellationToken, List<Series>> LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
         private static List<CustomLabel> RadarLabels = Weapon.RadarLabels();
 
-        private static IFormWriter Writer = new WeaponFormWriter();
+        private static FormWriter Writer = new WeaponFormWriter();
 
         public static bool Overclocked = false;
         public static bool Overpowered = false;
@@ -67,6 +67,7 @@ namespace Star_Citizen_Item_Viewer
         private void Form1_Load(object sender, EventArgs e)
         {
             Columns = Writer.GetColumns();
+            Downloads = Writer.GetDownloadInfo(FilePath);
             listBox1.SelectedIndex = 0;
         }
 
@@ -227,13 +228,28 @@ namespace Star_Citizen_Item_Viewer
                         componentSelect.BeginInvoke(d);
                     });
                     Columns = Writer.GetColumns();
-                    Downloads = Weapon.GetDownloadInfo(FilePath);
+                    Downloads = Writer.GetDownloadInfo(FilePath);
                     LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
                     RadarLabels = Weapon.RadarLabels();
                     damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = true;
                     OverpoweredCheckbox.Enabled = true;
                     HotCheckbox.Enabled = true;
+                    break;
+                case "Shields":
+                    Writer = new ShieldFormWriter();
+                    Task.Run(() =>
+                    {
+                        MasterData = Shield.parseAll(FilePath + "\\shields");
+                        var tree = Writer.BuildTree(MasterData.Values.ToArray());
+                        MethodInvoker d = delegate ()
+                        {
+                            componentSelect.Nodes.AddRange(tree);
+                        };
+                        componentSelect.BeginInvoke(d);
+                    });
+                    Columns = Writer.GetColumns();
+                    Downloads = Writer.GetDownloadInfo(FilePath);
                     break;
                 case "Power Plants":
                     MasterData = new Dictionary<string, object>();
@@ -257,7 +273,7 @@ namespace Star_Citizen_Item_Viewer
                         componentSelect.BeginInvoke(d);
                     });
                     Columns = Writer.GetColumns();
-                    Downloads = Gun.GetDownloadInfo(FilePath);
+                    Downloads = Writer.GetDownloadInfo(FilePath);
                     LineGraphSeriesCreator = Gun.CreateLineGraphSeries;
                     damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = false;
@@ -284,25 +300,6 @@ namespace Star_Citizen_Item_Viewer
                     HotCheckbox.Enabled = false;
                     break;
             }
-            
-            //Dictionary<int, TreeNode> sizes = new Dictionary<int, TreeNode>();
-            //foreach (Item weapon in MasterData.Values)
-            //{
-            //    TreeNode n = new TreeNode();
-            //    n.Name = weapon.Id;
-            //    n.Text = weapon.Name;
-            //
-            //    if (sizes.ContainsKey(weapon.Size))
-            //        sizes[weapon.Size].Nodes.Add(n);
-            //    else
-            //        sizes.Add(weapon.Size, new TreeNode("Size " + weapon.Size.ToString(), new TreeNode[] { n }));
-            //}
-            //foreach (var key in sizes.Keys.OrderBy(x => x))
-            //{
-            //    componentSelect.Nodes.Add(sizes[key]);
-            //}
-
-            
 
             dataGridView1.Columns.Clear();
             for (int i = 0; i < Columns.Length; i++)
@@ -470,15 +467,17 @@ namespace Star_Citizen_Item_Viewer
         public string Format { get; set; }
         public bool Visible { get; set; }
         public string DataName { get; set; }
+        public int Priority { get; set; }
 
-        public Column(string n, string d, bool s, bool i = false, string f = "", bool v = true)
+        public Column(string name, string dataName, bool sort, bool sortDescending = false, string format = "", bool visible = true, int priority = 100)
         {
-            Name = n;
-            DataName = d;
-            Sort = s;
-            Invert = i;
-            Format = f;
-            Visible = v;
+            Name = name;
+            DataName = dataName;
+            Sort = sort;
+            Invert = sortDescending;
+            Format = format;
+            Visible = visible;
+            Priority = priority;
         }
     }
 

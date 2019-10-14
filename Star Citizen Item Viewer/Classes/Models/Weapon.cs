@@ -351,17 +351,6 @@ namespace Star_Citizen_Item_Viewer.Classes
             return new Dictionary<string, object>(output);
         }
 
-        public static List<string[]> GetDownloadInfo(string FilePath)
-        {
-            return new List<string[]>
-            {
-                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", FilePath + "\\weapons" }
-                //,new string[] {"http://starcitizendb.com/api/components/df/PowerPlant", FilePath + "\\power plants"}
-                //,new string[] {"http://starcitizendb.com/api/components/df/Cooler", FilePath + "\\coolers"}
-                //,new string[] {"http://starcitizendb.com/api/components/df/Shield", FilePath + "\\shields"}
-            };
-        }
-
         public static List<Series> CreateLineGraphSeries(List<object> Data, int Ticks, CancellationToken Token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();

@@ -77,15 +77,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\Armor.cs" />
-    <Compile Include="Classes\Gun.cs" />
-    <Compile Include="Classes\IComponent.cs" />
-    <Compile Include="Classes\Item.cs" />
-    <Compile Include="Classes\NewFolder1\GunFormWriter.cs" />
-    <Compile Include="Classes\NewFolder1\WeaponFormWriter.cs" />
-    <Compile Include="Classes\RankTracker.cs" />
+    <Compile Include="Classes\Models\Armor.cs" />
+    <Compile Include="Classes\ColumnData.cs" />
+    <Compile Include="Classes\Models\Gun.cs" />
+    <Compile Include="Classes\FormWriters\FormWriter.cs" />
+    <Compile Include="Classes\Models\Item.cs" />
+    <Compile Include="Classes\FormWriters\GunFormWriter.cs" />
+    <Compile Include="Classes\FormWriters\ShieldFormWriter.cs" />
+    <Compile Include="Classes\FormWriters\WeaponFormWriter.cs" />
+    <Compile Include="Classes\FormWriters\RankTracker.cs" />
+    <Compile Include="Classes\Models\Shield.cs" />
     <Compile Include="Classes\Utility.cs" />
-    <Compile Include="Classes\Weapon.cs" />
+    <Compile Include="Classes\Models\Weapon.cs" />
     <Compile Include="Forms\DamageComparison.cs">
       <SubType>Form</SubType>
     </Compile>

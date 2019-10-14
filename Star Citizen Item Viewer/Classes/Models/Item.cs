@@ -11,6 +11,7 @@ namespace Star_Citizen_Item_Viewer.Classes
     {
         Weapon,
         Gun,
+        Shield,
         Helmet,
         Torso,
         Arms,
@@ -38,6 +39,7 @@ namespace Star_Citizen_Item_Viewer.Classes
     {
         public string Id { get; set; }
         private string _name { get; set; }
+        [ColumnData("Name", 1, false)]
         public string Name
         {
             get
@@ -49,6 +51,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _name = Regex.Replace(value, @"[^\u0000-\u007F]+", string.Empty);
             }
         }
+        [ColumnData("Size", 2, false)]
         public int Size { get; set; }
         public string Filename { get; set; }
 
