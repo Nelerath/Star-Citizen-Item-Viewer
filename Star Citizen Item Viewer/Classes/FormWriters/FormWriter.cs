@@ -83,7 +83,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 {
                     Item i = (Item)item;
                     Series s = i.GetNewRadarGraphSeries();
-                    foreach (var field in Fields)
+                    foreach (var field in Fields.OrderBy(x => x.Priority))
                     {
                         s.Points.Add(new DataPoint(0, GetRank(field.DataFieldName, Convert.ToDouble(Utility.GetValue(item, field.DataFieldName)), field.SortDescending)));
                     }
