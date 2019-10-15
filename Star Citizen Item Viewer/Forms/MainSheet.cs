@@ -48,8 +48,6 @@ namespace Star_Citizen_Item_Viewer
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Columns = Writer.GetColumns();
-            Downloads = Writer.GetDownloadInfo();
             listBox1.SelectedIndex = 0;
         }
 
@@ -107,10 +105,9 @@ namespace Star_Citizen_Item_Viewer
 
         private void radarComparison_Click(object sender, EventArgs e)
         {
-            Task.Run(() =>
+            RadarChartOptions view = new RadarChartOptions(MasterData, Writer);
+            Task t = Task.Run(() =>
             {
-                RadarChartOptions view = new RadarChartOptions(MasterData, Writer);
-                //RadarChart view = new RadarChart(Data, RadarGraphSeriesCreator, RadarLabels);
                 view.ShowDialog();
             });
         }

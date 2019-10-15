@@ -42,14 +42,14 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public FireModeStats Rapid { get; set; }
         public FireModeStats Single { get; set; }
-        public FireModeStats Burst { get; set; }
+        public BurstFireModeStats Burst { get; set; }
 
-        public int BurstShotCount { get; set; }
-        //public decimal BurstDuration { get; set; }
-        public decimal BurstCooldown { get; set; }
+        
 
-        public Magazine Magazine { get; set; }
+        private Magazine Magazine { get; set; }
 
+        [ColumnData("Projectile Velocity", 19, true, true)]
+        [RadarField]
         public int Speed
         {
             get
@@ -57,7 +57,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return Magazine.Ammo.Speed;
             }
         }
-
+        [ColumnData("Max Range", 20, true, true, "N2")]
+        [RadarField]
         public decimal MaxRange
         {
             get
@@ -66,114 +67,115 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
         }
 
+        [ColumnData("Damage Biochemical", 5, true, true, "N2")]
+        [RadarField]
         public decimal DamageBiochemical { get { return Magazine.Ammo.DamageBiochemical; } }
+        [ColumnData("Damage Distortion", 6, true, true, "N2")]
+        [RadarField]
         public decimal DamageDistortion { get { return Magazine.Ammo.DamageDistortion; } }
+        [ColumnData("Damage Energy", 7, true, true, "N2")]
+        [RadarField]
         public decimal DamageEnergy { get { return Magazine.Ammo.DamageEnergy; } }
+        [ColumnData("Damage Physical", 8, true, true, "N2")]
+        [RadarField]
         public decimal DamagePhysical { get { return Magazine.Ammo.DamagePhysical; } }
+        [ColumnData("Damage Thermal", 9, true, true, "N2")]
+        [RadarField]
         public decimal DamageThermal { get { return Magazine.Ammo.DamageThermal; } }
+        [ColumnData("Damage", 3, true, true, "N2")]
+        [RadarField]
         public decimal DamageTotal { get { return Magazine.Ammo.DamageTotal; } }
-        public decimal DamageSpecial { get; set; }
+        [ColumnData("Damage Special", 4, true, true, "N2")]
+        [RadarField]
+        public decimal? DamageSpecial { get; set; }
 
+        [ColumnData("Weight", 21, true, false, "N2")]
         public decimal Weight { get; set; }
 
-        public Gun(dynamic Json, string File, Dictionary<string, object> Magazines)
+        public Gun(dynamic json, string file, Dictionary<string, object> magazines)
         {
-            Id = Json.__ref;
-            Name = string.IsNullOrEmpty((string)Json.name_local) ? File : Json.name_local;
-            Size = Json.size;
-            Filename = File;
+            Id = json.__ref;
+            Name = string.IsNullOrEmpty((string)json.name_local) ? file : json.name_local;
+            Size = json.size;
+            Filename = file;
             Type = Types.Gun;
 
             Rapid = null;
             Single = null;
             Burst = null;
 
-            Magazine = Magazines[Convert.ToString(Json.Components.SCItemWeaponComponentParams.ammoContainerRecord)];
+            Magazine = magazines[Convert.ToString(json.Components.SCItemWeaponComponentParams.ammoContainerRecord)];
             //ADSTime = Json.Components.SCItemWeaponComponentParams.aimAction.SWeaponActionAimSimpleParams.zoomInTime;
 
-            if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams != null)
+            if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams != null)
             {
                 Single = new FireModeStats(DamageTotal);
-                Single.Firerate = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.fireRate / 60M;
-                Single.MinSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.min;
-                Single.MaxSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.max;
-                Single.InitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.firstAttack;
-                Single.SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.attack;
-                Single.SpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.decay;
-                Single.ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.pelletCount ?? 1;
+                
+                if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single != null)
+                {
+                    Single.Firerate = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.fireRate / 60M;
+                    Single.MinSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.min;
+                    Single.MaxSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.max;
+                    Single.InitialSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.firstAttack;
+                    Single.SpreadGrowth = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.attack;
+                    Single.SpreadDecay = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.spreadParams.decay;
+                    Single.ProjectilesPerShot = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireSingleParams.Single.launchParams.SProjectileLauncher.pelletCount ?? 1;
+                }
             }
-
-            // These are completely broken and I hate CIG.
-            //if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams != null)
-            //{
-            //    BurstFirerate = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.fireRate / 60M;
-            //    BurstMaxSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.max;
-            //    BurstInitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
-            //    BurstSpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.attack;
-            //    BurstSpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.decay;
-            //    ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
-            //    BurstShotCount = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.shotCount;
-            //    BurstCooldown = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireBurstParams.cooldownTime;
-            //}
+            else if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams != null) // Retarded energy shotgun
+            {
+                if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams != null)
+                {
+                    Single = new FireModeStats(DamageTotal);
+                    Single.Firerate = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.fireRate / 60M;
+                    Single.MinSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.launchParams.SProjectileLauncher.spreadParams.min;
+                    Single.MaxSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.launchParams.SProjectileLauncher.spreadParams.max;
+                    Single.InitialSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
+                    Single.SpreadGrowth = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.launchParams.SProjectileLauncher.spreadParams.attack;
+                    Single.SpreadDecay = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.launchParams.SProjectileLauncher.spreadParams.decay;
+                    Single.ProjectilesPerShot = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.weaponAction.SWeaponActionFireSingleParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
+                }
+            }
             
-            if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams != null)
+            if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams != null)
             {
                 Rapid = new FireModeStats(DamageTotal);
-                Rapid.Firerate = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.fireRate / 60M;
-                Rapid.MinSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.min;
-                Rapid.MaxSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.max;
-                Rapid.InitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
-                Rapid.SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.attack;
-                Rapid.SpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.decay;
-                Rapid.ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
+                Rapid.Firerate = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.fireRate / 60M;
+                Rapid.MinSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.min;
+                Rapid.MaxSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.max;
+                Rapid.InitialSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
+                Rapid.SpreadGrowth = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.attack;
+                Rapid.SpreadDecay = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.spreadParams.decay;
+                Rapid.ProjectilesPerShot = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireRapidParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
             }
 
-            if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams != null)
+            if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams != null)
             {
-                DamageSpecial = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.maxChargeModifier.damageMultiplier * DamageTotal;
+                DamageSpecial = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.maxChargeModifier.damageMultiplier * DamageTotal;
             }
             else
             {
-                DamageSpecial = DamageTotal;
+                DamageSpecial = null;
             }
 
-            if (Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams != null && Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.name == "Burst")
+            if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams != null && json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.name == "Burst")
             {
-                Burst = new FireModeStats(DamageTotal);
-                Burst.Firerate = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.fireRate / 60M;
-                Burst.MinSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.min;
-                Burst.MaxSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.max;
-                Burst.InitialSpread = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
-                Burst.SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.attack;
-                Burst.SpreadDecay = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.decay;
-                Burst.ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
+                Burst = new BurstFireModeStats(DamageTotal);
+                Burst.Firerate = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.fireRate / 60M;
+                Burst.MinSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.min;
+                Burst.MaxSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.max;
+                Burst.InitialSpread = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.firstAttack;
+                Burst.SpreadGrowth = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.attack;
+                Burst.SpreadDecay = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.spreadParams.decay;
+                Burst.ProjectilesPerShot = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.launchParams.SProjectileLauncher.pelletCount ?? 1;
 
-                BurstShotCount = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.shotCount;
-                //BurstDuration = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.cooldownTime;
-                BurstCooldown = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.delay;
+                Burst.ShotCount = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.shotCount;
+                //Burst.BurstDuration = Json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.weaponAction.SWeaponActionFireBurstParams.cooldownTime;
+                Burst.BurstCooldown = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.sequenceEntries.SWeaponSequenceEntryParams.delay;
             }
 
-            Weight = Convert.ToDecimal(Json.Components.SEntityPhysicsControllerParams.PhysType.SEntityRigidPhysicsControllerParams.Mass) + Magazine.Weight;
+            Weight = Convert.ToDecimal(json.Components.SEntityPhysicsControllerParams.PhysType.SEntityRigidPhysicsControllerParams.Mass) + Magazine.Weight;
         }
-
-        //public static Dictionary<string, object> parseAll(string FilePath)
-        //{
-        //    ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
-        //
-        //    Parallel.ForEach(Directory.GetFiles(FilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
-        //    {
-        //        try
-        //        {
-        //            string raw = File.ReadAllText(path).Replace("@", "");
-        //            dynamic json = JsonConvert.DeserializeObject(raw);
-        //            Gun g = new Gun(json, path.Replace(FilePath + "\\", "").Replace(".json", ""));
-        //            output.TryAdd(g.Id, g);
-        //        }
-        //        catch (Exception ex) { }
-        //    });
-        //
-        //    return new Dictionary<string, object>(output);
-        //}
 
         public static Dictionary<string, object> parseAll()
         {
@@ -240,13 +242,13 @@ namespace Star_Citizen_Item_Viewer.Classes
         }
 
         private static decimal TickSeconds = .01M;
-        public static List<Series> CreateLineGraphSeries(List<object> Data, int Ticks, CancellationToken Token)
+        public static List<Series> CreateLineGraphSeries(List<object> data, int ticks, CancellationToken token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
-                Parallel.ForEach(Data, options, (item, loopState) =>
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = token };
+                Parallel.ForEach(data, options, (item, loopState) =>
                 {
                     Gun g = (Gun)item;
 
@@ -261,17 +263,17 @@ namespace Star_Citizen_Item_Viewer.Classes
                         shotsFired = 1;
                         rapidX.Add(x);
                         rapidY.Add(shotsFired * g.DamageTotal);
-                        while (x <= Ticks * TickSeconds)
+                        while (x <= ticks * TickSeconds)
                         {
                             x += (1 / g.Rapid.Firerate);
-                            if (x <= Ticks * TickSeconds)
+                            if (x <= ticks * TickSeconds)
                             {
                                 shotsFired++;
                                 rapidX.Add(x);
                             }
                             else
                             {
-                                rapidX.Add(Ticks * TickSeconds);
+                                rapidX.Add(ticks * TickSeconds);
                             }
                             rapidY.Add(shotsFired * g.DamageTotal);
                         }
@@ -288,10 +290,10 @@ namespace Star_Citizen_Item_Viewer.Classes
                         x = 0;
                         shotsFired = 0;
                         decimal q = 0;
-                        for (int i = 0; i < g.BurstShotCount; i++)
+                        for (int i = 0; i < g.Burst.ShotCount; i++)
                         {
                             q = x + (i * (1 / g.Burst.Firerate));
-                            if (q <= Ticks * TickSeconds)
+                            if (q <= ticks * TickSeconds)
                             {
                                 shotsFired++;
                                 burstX.Add(q);
@@ -300,13 +302,13 @@ namespace Star_Citizen_Item_Viewer.Classes
                             else
                                 break;
                         }
-                        x += g.BurstCooldown;
-                        while (x <= Ticks * TickSeconds)
+                        x += g.Burst.BurstCooldown;
+                        while (x <= ticks * TickSeconds)
                         {
-                            for (int i = 0; i < g.BurstShotCount; i++)
+                            for (int i = 0; i < g.Burst.ShotCount; i++)
                             {
                                 q = x + (i * (1 / g.Burst.Firerate));
-                                if (q <= Ticks * TickSeconds)
+                                if (q <= ticks * TickSeconds)
                                 {
                                     shotsFired++;
                                     burstX.Add(q);
@@ -315,9 +317,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                                 else
                                     break;
                             }
-                            x += g.BurstCooldown;
+                            x += g.Burst.BurstCooldown;
                         }
-                        burstX.Add(Ticks * TickSeconds);
+                        burstX.Add(ticks * TickSeconds);
                         burstY.Add(shotsFired * g.DamageTotal);
 
                         Series s = g.GetNewLineGraphSeries(g.Name + " Burst");
@@ -334,17 +336,17 @@ namespace Star_Citizen_Item_Viewer.Classes
                         shotsFired = 1;
                         singleX.Add(x);
                         singleY.Add(shotsFired * g.DamageTotal);
-                        while (x <= Ticks * TickSeconds)
+                        while (x <= ticks * TickSeconds)
                         {
                             x += (1 / g.Single.Firerate);
-                            if (x <= Ticks * TickSeconds)
+                            if (x <= ticks * TickSeconds)
                             {
                                 shotsFired++;
                                 singleX.Add(x);
                             }
                             else
                             {
-                                singleX.Add(Ticks * TickSeconds);
+                                singleX.Add(ticks * TickSeconds);
                             }
                             singleY.Add(shotsFired * g.DamageTotal);
                         }
@@ -357,149 +359,10 @@ namespace Star_Citizen_Item_Viewer.Classes
                 });
             }
             catch (OperationCanceledException) { }
-            return new List<Series>(list).OrderBy(x => x.Name).Concat(DrawKillLines(Ticks)).ToList();
+            return new List<Series>(list).OrderBy(x => x.Name).Concat(DrawKillLines(ticks)).ToList();
         }
 
-        /*
-        public static List<Series> CreateRadarGraphSeries(List<object> Data, CancellationToken Token)
-        {
-            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
-            decimal weight = 99999999;
-            decimal damage = 0;
-
-            decimal firerate = 0;
-            decimal spreadMin = 99999999;
-            decimal spreadMax = 99999999;
-            decimal spreadInitial = 99999999;
-
-            decimal TTK = 9999;
-            // Weight
-            // Damage
-            // Firerate
-            // SpreadMin
-            // SpreadMax
-            // InitialSpread
-            // TTK
-
-
-            // Nice to haves
-            // Recoil
-            // TTK Unarmored Head
-            // TTK Light Head
-            // TTK Medium Head
-            // TTK Heavy Head
-            // TTK Unarmored Chest
-            // TTK Light Chest
-            // TTK Medium Chest
-            // TTK Heavy Chest
-            foreach (Gun item in Data)
-            {
-                weight = Math.Min(item.Weight, weight);
-                damage = Math.Max(item.DamageTotal, damage);
-
-                if (item.RapidFirerate > 0)
-                {
-                    firerate = Math.Max(item.RapidFirerate, firerate);
-
-                    spreadMin = Math.Min(item.RapidMinSpread, spreadMin);
-                    spreadMax = Math.Min(item.RapidMaxSpread, spreadMax);
-                    spreadInitial = Math.Min(item.RapidInitialSpread, spreadInitial);
-
-                    TTK = Math.Min(CalculateAverageTTK(item.DamageTotal, item.RapidFirerate), TTK);
-                }
-
-                // Burstfire is fucked
-                //if (item.BurstFirerate > 0)
-                //{
-                //    firerate = Math.Max(item.BurstFirerate, firerate);
-                //
-                //    spreadMin = Math.Min(item.BurstMinSpread, spreadMin);
-                //    spreadMax = Math.Min(item.BurstMaxSpread, spreadMax);
-                //    spreadInitial = Math.Min(item.BurstInitialSpread, spreadInitial);
-                //
-                //    TTK = Math.Min(CalculateAverageTTK(item.DamageTotal, item.BurstFirerate), TTK);
-                //}
-                
-                if (item.SingleFirerate > 0)
-                {
-                    firerate = Math.Max(item.SingleFirerate, firerate);
-                
-                    spreadMin = Math.Min(item.SingleMinSpread, spreadMin);
-                    spreadMax = Math.Min(item.SingleMaxSpread, spreadMax);
-                    spreadInitial = Math.Min(item.SingleInitialSpread, spreadInitial);
-
-                    TTK = Math.Min(CalculateAverageTTK(item.DamageTotal, item.SingleFirerate), TTK);
-                }
-            }
-            try
-            {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
-                Parallel.ForEach(Data, options, (item, loopState) =>
-                {
-                    Gun g = (Gun)item;
-
-                    // Weight
-                    // Damage
-                    // Firerate
-                    // SpreadMin
-                    // SpreadMax
-                    // InitialSpread
-                    if (g.RapidFirerate > 0)
-                    {
-                        Series s = g.GetNewRadarGraphSeries(g.Name + " Rapid");
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.Weight, weight, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.DamageTotal , damage)));
-
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidFirerate , firerate)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidMinSpread, spreadMin, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidMaxSpread, spreadMax, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.RapidInitialSpread , spreadInitial, false)));
-
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(CalculateAverageTTK(g.DamageTotal, g.RapidFirerate), TTK, false)));
-
-                        list.Enqueue(s);
-                    }
-
-                    // Burst is fucked
-                    //if (g.BurstFirerate > 0)
-                    //{
-                    //    Series s = g.GetNewRadarGraphSeries(g.Name + " Burst");
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.Weight, weight, false)));
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.DamageTotal, damage)));
-                    //
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstFirerate, firerate)));
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstMinSpread, spreadMin, false)));
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstMaxSpread, spreadMax, false)));
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(g.BurstInitialSpread, spreadInitial, false)));
-                    //
-                    //    s.Points.Add(new DataPoint(0, Utility.GetRank(CalculateAverageTTK(g.DamageTotal, g.BurstFirerate), TTK, false)));
-                    //
-                    //    list.Enqueue(s);
-                    //}
-
-                    if (g.SingleFirerate > 0)
-                    {
-                        Series s = g.GetNewRadarGraphSeries(g.Name + " Single");
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.Weight, weight, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.DamageTotal, damage)));
-
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleFirerate, firerate)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleMinSpread, spreadMin, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleMaxSpread, spreadMax, false)));
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(g.SingleInitialSpread, spreadInitial, false)));
-
-                        s.Points.Add(new DataPoint(0, Utility.GetRank(CalculateAverageTTK(g.DamageTotal, g.SingleFirerate), TTK, false)));
-
-                        list.Enqueue(s);
-                    }
-                });
-            }
-            catch (OperationCanceledException) { }
-            return new List<Series>(list).OrderBy(x => x.Name).ToList();
-        }
-        */
-
-        private static List<Series> DrawKillLines(int Ticks)
+        private static List<Series> DrawKillLines(int ticks)
         {
             List<Series> output = new List<Series>();
             foreach (var bodyPart in new string[] { "Head", "Torso" })
@@ -527,7 +390,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                         default: armoredHealth = health; break;
                     }
 
-                    decimal[] x = new decimal[2] { 0, Ticks * TickSeconds };
+                    decimal[] x = new decimal[2] { 0, ticks * TickSeconds };
                     decimal[] y = new decimal[2] { armoredHealth, armoredHealth };
 
                     Series s = new Series(armor + " " + bodyPart);
@@ -547,18 +410,53 @@ namespace Star_Citizen_Item_Viewer.Classes
         }
     }
 
+    public class BurstFireModeStats : FireModeStats
+    {
+        [ColumnData("Shot Count", 10, true, true)]
+        [RadarField]
+        public int ShotCount { get; set; }
+        //public decimal BurstDuration { get; set; }
+        public decimal BurstCooldown { get; set; }
+        public BurstFireModeStats(decimal damage) : base(damage) {  }
+    }
+
     public class FireModeStats
     {
+        [ColumnData("Firerate", 10, true, true, "N2")]
+        [RadarField]
         public decimal Firerate { get; set; }
+        [ColumnData("Min Spread", 14, true, false, "N2")]
+        [RadarField]
         public decimal MinSpread { get; set; }
+        [ColumnData("Max Spread", 15, true, false, "N2")]
+        [RadarField]
         public decimal MaxSpread { get; set; }
+        [ColumnData("Initial Spread", 16, true, false, "N2")]
+        [RadarField]
         public decimal InitialSpread { get; set; }
+        [ColumnData("Spread Growth", 17, true, false, "N2")]
+        [RadarField]
         public decimal SpreadGrowth { get; set; }
+        [ColumnData("Spread Decay", 18, true, true, "N2")]
+        [RadarField]
         public decimal SpreadDecay { get; set; }
-        public int ProjectilesPerShot = 1;
+        [ColumnData("Projectiles per Shot", 13, true, true)]
+        [RadarField]
+        public int ProjectilesPerShot { get; set; }
 
-        public FireModeStats(decimal damage) { Damage = damage; }
-        private decimal Damage { get; set; }
+        public FireModeStats(decimal damage) { _damage = damage; }
+        protected decimal _damage { get; set; }
+        protected decimal Damage
+        {
+            get { return _damage * ProjectilesPerShot; }
+        }
+
+        [ColumnData("Damage per Second", 11, true, true, "N2")]
+        [RadarField]
+        public decimal DamagePerSecond { get { return Damage * Firerate; } }
+
+        [ColumnData("Average TTK", 12, true, true, "N2")]
+        [RadarField]
         public decimal AverageTTK
         {
             get
@@ -584,7 +482,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                             default: armoredHealth = health; break;
                         }
 
-                        ttks[i] = (Math.Ceiling(armoredHealth / (Damage * ProjectilesPerShot)) - 1) / Firerate;
+                        ttks[i] = (Math.Ceiling(armoredHealth / Damage) - 1) / Firerate;
                         i++;
                     }
                 }
@@ -593,7 +491,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         }
     }
 
-    public class Magazine : Item
+    class Magazine : Item
     {
         public Ammo Ammo { get; set; }
         public int AmmoCount { get; set; }
@@ -613,7 +511,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         }
     }
 
-    public class Ammo : Item
+    class Ammo : Item
     {
         public decimal Lifetime { get; set; }
         public int Speed { get; set; }

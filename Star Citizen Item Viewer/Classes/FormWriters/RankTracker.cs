@@ -31,6 +31,8 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public double GetRank(string field, double value, bool descending)
         {
+            if (field.StartsWith("Rapid"))
+                Console.WriteLine();
             if (descending)
             {
                 if (TopValues[field] == 0)
@@ -44,11 +46,6 @@ namespace Star_Citizen_Item_Viewer.Classes
                     return 100;
                 else
                     return Math.Floor((1-(value / BottomValues[field])) * 100);
-
-                //if (value == 0)
-                //    return 100;
-                //else
-                //    return Math.Floor((TopValues[field] / value) * 100);
             }
         }
 

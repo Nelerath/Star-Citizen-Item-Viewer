@@ -12,97 +12,101 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
 {
     public class GunFormWriter : FormWriter
     {
-        public GunFormWriter(Type type) : base(type)
+        public GunFormWriter(Type type) : base(type) { }
+
+        public override TreeNode[] BuildTree(object[] Items)
         {
-            Fields = new List<FieldInfo>
+            Dictionary<string, Dictionary<string, Dictionary<string, List<TreeNode>>>> tree = new Dictionary<string, Dictionary<string, Dictionary<string, List<TreeNode>>>>();
+            foreach (Gun item in Items)
             {
-                new FieldInfo
+                TreeNode n = new TreeNode();
+                n.Name = item.Id;
+                n.Text = item.Name;
+
+                string sizeKey = item.Size.ToString();
+
+                string damageKey = "Unknown";
+                if (item.DamagePhysical > 0)
+                    damageKey = "Physical";
+                else if (item.DamageEnergy > 0)
+                    damageKey = "Energy";
+                else if (item.DamageBiochemical > 0)
+                    damageKey = "Biochemical";
+                else if (item.DamageThermal > 0)
+                    damageKey = "Thermal";
+                else if (item.DamageDistortion > 0)
+                    damageKey = "Distortion";
+
+                string shotKey = "Unknown";
+                if (
+                    (item.Single == null && item.Rapid == null && item.Burst != null) // It only has burstfire
+                    || (item.Rapid != null && item.Rapid.ProjectilesPerShot > 1) // It's rapid fires bursts
+                    || (item.Single != null && item.Single.ProjectilesPerShot > 1) // It's single fires bursts
+                    )
+                    shotKey = "Multiple Projectiles";
+                else
+                    shotKey = "Single Projectile";
+
+                if (tree.ContainsKey(sizeKey))
                 {
-                    DisplayFieldName = "Speed",
-                    DataFieldName = "Speed",
-                    SortDescending = true
-                },
-                new FieldInfo
+                    if (tree[sizeKey].ContainsKey(damageKey))
+                    {
+                        if (tree[sizeKey][damageKey].ContainsKey(shotKey))
+                        {
+                            tree[sizeKey][damageKey][shotKey].Add(n);
+                        }
+                        else
+                        {
+                            tree[sizeKey][damageKey].Add(shotKey, new List<TreeNode>() { n });
+                        }
+                    }
+                    else
+                    {
+                        tree[sizeKey].Add(damageKey, new Dictionary<string, List<TreeNode>>());
+                        tree[sizeKey][damageKey].Add(shotKey, new List<TreeNode>() { n });
+                    }
+                }
+                else
                 {
-                    DisplayFieldName = "DamageTotal",
-                    DataFieldName = "DamageTotal",
-                    SortDescending = true
-                },
-                new FieldInfo
+                    tree.Add(sizeKey, new Dictionary<string, Dictionary<string, List<TreeNode>>>());
+                    tree[sizeKey].Add(damageKey, new Dictionary<string, List<TreeNode>>());
+                    tree[sizeKey][damageKey].Add(shotKey, new List<TreeNode>() { n });
+                }
+            }
+
+
+            List<TreeNode> nodes = new List<TreeNode>();
+            foreach (var size in tree.Keys)
+            {
+                List<TreeNode> sizeNodes = new List<TreeNode>();
+                foreach (var damage in tree[size].Keys)
                 {
-                    DisplayFieldName = "Single.Firerate",
-                    DataFieldName = "Single.Firerate",
-                    SortDescending = true
-                },
-                new FieldInfo
-                {
-                    DisplayFieldName = "Single.AverageTTK",
-                    DataFieldName = "Single.AverageTTK",
-                    SortDescending = true
-                },
-                new FieldInfo
-                {
-                    DisplayFieldName = "Rapid.Firerate",
-                    DataFieldName = "Rapid.Firerate",
-                    SortDescending = true
-                },
-                new FieldInfo
-                {
-                    DisplayFieldName = "Rapid.AverageTTK",
-                    DataFieldName = "Rapid.AverageTTK",
-                    SortDescending = true
-                },
-                new FieldInfo
-                {
-                    DisplayFieldName = "Weight",
-                    DataFieldName = "Weight",
-                    SortDescending = false
-                },
-            };
+                    List<TreeNode> damageNodes = new List<TreeNode>();
+                    foreach (var shot in tree[size][damage].Keys)
+                    {
+                        TreeNode shotNode = new TreeNode(shot);
+                        shotNode.Nodes.AddRange(tree[size][damage][shot].OrderBy(x => x.Text).ToArray());
+                        damageNodes.Add(shotNode);
+                    }
+                    TreeNode damageNode = new TreeNode(damage);
+                    damageNode.Nodes.AddRange(damageNodes.OrderBy(x => x.Text).ToArray());
+                    sizeNodes.Add(damageNode);
+                }
+                TreeNode sizeNode = new TreeNode(size);
+                sizeNode.Nodes.AddRange(sizeNodes.OrderBy(x => x.Text).ToArray());
+                nodes.Add(sizeNode);
+            }
+
+            return nodes.OrderBy(x => Convert.ToInt16(x.Text)).ToArray();
         }
 
-        public override Column[] GetColumns()
-        {
-            return new Column[] {
-                new Column("Id", "Id", false, false, "", false),
-                new Column("Name", "Name", false),
-                new Column("Total Damage", "DamageTotal", true, true),
-                new Column("Special Damage", "DamageSpecial", true, true, "N2"),
-                //new Column("Projectiles Per Shot", "ProjectilesPerShot", true, true),
-                new Column("Singleshot Firerate", "Single.Firerate", true, true, "N2"),
-                new Column("Burst Firerate", "Burst.Firerate", true, true, "N2"),
-                new Column("Auto Firerate", "Rapid.Firerate", true, true, "N2"),
-                new Column("Biochemical Damage", "DamageBiochemical", true, true),
-                new Column("Distortion Damage", "DamageDistortion", true, true),
-                new Column("Energy Damage", "DamageEnergy", true, true),
-                new Column("Physical Damage", "DamagePhysical", true, true),
-                new Column("Thermal Damage", "DamageThermal", true, true),
-                //new Column("Damage Per Power", "DamagePerPower", true, true, "N2"),
-                //new Column("Damage Per Heat", "DamagePerHeat", true, true, "N2"),
-                //new Column("Power Per Shot", "PowerPerShot", true, false),
-                //new Column("Heat Per Shot", "HeatPerShot", true, false),
-                //new Column("Heat Per Second", "HeatPerSecond", true, false, "N2"),
-                //new Column("Heat Uptime", "HeatUptime", true, true, "N2"),
-                new Column("Projectile Velocity", "Speed", true, true),
-                new Column("Max Range", "MaxRange", true, true),
-                new Column("Weight", "Weight", true, false, "N2"),
-                //new Column("Max Spread", "MaxSpread", true, false, "N3"),
-                //new Column("Initial Spread", "InitialSpread", true, false, "N3"),
-                //new Column("Spread Growth", "SpreadGrowth", true, false, "N3"),
-                //new Column("Spread Decay", "SpreadDecay", true, true, "N3"),
-                //new Column("Spread Per Second", "SpreadPerSecond", true, false, "N3"),
-                //new Column("Time Until Max Spread", "TimeUntilMaxSpread", true, true, "N3"),
-                new Column("Score", null, true, true, "N2", false),
-            };
-        }
-
-        public override List<Series> CreateRadarGraphSeries(List<object> Data, CancellationToken Token)
+        public override List<Series> CreateRadarGraphSeries(List<object> data, CancellationToken token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
-                Parallel.ForEach(Data, options, (item, loopState) =>
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = token };
+                Parallel.ForEach(data, options, (item, loopState) =>
                 {
                     Gun g = (Gun)item;
                     Series s = g.GetNewRadarGraphSeries();
@@ -121,19 +125,6 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             }
             catch (OperationCanceledException) { }
             return new List<Series>(list).OrderBy(x => x.Name).ToList();
-        }
-
-        public override List<CustomLabel> RadarLabels()
-        {
-            List<CustomLabel> output = new List<CustomLabel>();
-            foreach (var field in Fields)
-            {
-                CustomLabel label = new CustomLabel();
-                label.ForeColor = System.Drawing.Color.White;
-                label.Text = field.DisplayFieldName;
-                output.Add(label);
-            }
-            return output;
         }
 
         public override List<string[]> GetDownloadInfo()

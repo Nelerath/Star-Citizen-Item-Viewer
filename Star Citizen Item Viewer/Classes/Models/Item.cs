@@ -82,9 +82,12 @@ namespace Star_Citizen_Item_Viewer.Classes
             Series s = new Series(OverrideName ?? Name);
             s.ChartType = SeriesChartType.Radar;
             s.CustomProperties = "AreaDrawingStyle=Polygon";
-            s.BorderWidth = 10;
+            s.BorderWidth = 5;
             s.Color = Color.Transparent;
-            //s.IsValueShownAsLabel = true;
+            s.MarkerStyle = MarkerStyle.Circle;
+            s.MarkerSize = 5;
+            s.IsValueShownAsLabel = true;
+            s.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold);
             return s;
         }
 

@@ -18,13 +18,14 @@ namespace Star_Citizen_Item_Viewer.Classes
             for (int i = 0; i < l; i++)
             {
                 //Series[i].Color = ColorFromHSV(i * increment, 1, 1);
-                Series[i].BorderColor = ColorFromHSV(i * increment, 1, 1);
+                Series[i].BorderColor = ColorFromHSV(i * increment, 1, 1, 125);
+                Series[i].LabelForeColor = ColorFromHSV(i * increment, 1, 1, 255);
+                Series[i].MarkerColor = ColorFromHSV(i * increment, 1, 1, 255);
             }
         }
 
-        public static Color ColorFromHSV(double hue, double saturation, double value)
+        public static Color ColorFromHSV(double hue, double saturation, double value, int alpha)
         {
-            int alpha = 125;
             int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
             double f = hue / 60 - Math.Floor(hue / 60);
 
