@@ -12,6 +12,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         Weapon,
         Gun,
         Shield,
+        Powerplant,
         Helmet,
         Torso,
         Arms,
@@ -37,6 +38,7 @@ namespace Star_Citizen_Item_Viewer.Classes
 
     public class Item
     {
+        [ColumnData("Id", 0, sort: false, visible: false)]
         public string Id { get; set; }
         private string _name { get; set; }
         [ColumnData("Name", 1, false)]
@@ -80,9 +82,13 @@ namespace Star_Citizen_Item_Viewer.Classes
             Series s = new Series(OverrideName ?? Name);
             s.ChartType = SeriesChartType.Radar;
             s.CustomProperties = "AreaDrawingStyle=Polygon";
-            s.BorderWidth = 5;
+            s.BorderWidth = 10;
+            s.Color = Color.Transparent;
             //s.IsValueShownAsLabel = true;
             return s;
         }
+
+        protected static string _filePath { get; set; }
+        public static void SetPath(string path) { _filePath = path; }
     }
 }

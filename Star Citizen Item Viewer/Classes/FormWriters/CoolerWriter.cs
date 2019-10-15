@@ -10,15 +10,15 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
 {
-    public class WeaponFormWriter : FormWriter
+    public class CoolerWriter : FormWriter
     {
-        public WeaponFormWriter(Type type) : base(type) { }
+        public CoolerWriter(Type type) : base(type) { }
 
         public override List<string[]> GetDownloadInfo()
         {
             return new List<string[]>
             {
-                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", Weapon.Filepath }
+                new string[] { "http://starcitizendb.com/api/components/df/Cooler", Cooler.Filepath }
             };
         }
     }

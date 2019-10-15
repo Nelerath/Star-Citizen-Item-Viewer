@@ -115,10 +115,12 @@
             "Weapons",
             "Guns",
             "Armor",
-            "Shields"});
-            this.listBox1.Location = new System.Drawing.Point(229, 398);
+            "Shields",
+            "Power Plants",
+            "Coolers"});
+            this.listBox1.Location = new System.Drawing.Point(216, 398);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(104, 84);
+            this.listBox1.Size = new System.Drawing.Size(117, 84);
             this.listBox1.TabIndex = 7;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
@@ -152,7 +154,7 @@
             // 
             // radarComparison
             // 
-            this.radarComparison.Location = new System.Drawing.Point(123, 398);
+            this.radarComparison.Location = new System.Drawing.Point(110, 398);
             this.radarComparison.Name = "radarComparison";
             this.radarComparison.Size = new System.Drawing.Size(100, 89);
             this.radarComparison.TabIndex = 12;
@@ -197,7 +199,7 @@
             // 
             this.damageOutput.Location = new System.Drawing.Point(12, 398);
             this.damageOutput.Name = "damageOutput";
-            this.damageOutput.Size = new System.Drawing.Size(105, 89);
+            this.damageOutput.Size = new System.Drawing.Size(92, 89);
             this.damageOutput.TabIndex = 8;
             this.damageOutput.Text = "Damage Output";
             this.damageOutput.UseVisualStyleBackColor = true;

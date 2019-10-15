@@ -77,6 +77,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\FormWriters\ArmorWriter.cs" />
+    <Compile Include="Classes\FormWriters\CoolerWriter.cs" />
+    <Compile Include="Classes\FormWriters\PowerPlantWriter.cs" />
     <Compile Include="Classes\Models\Armor.cs" />
     <Compile Include="Classes\ColumnData.cs" />
     <Compile Include="Classes\Models\Gun.cs" />
@@ -86,6 +89,8 @@
     <Compile Include="Classes\FormWriters\ShieldFormWriter.cs" />
     <Compile Include="Classes\FormWriters\WeaponFormWriter.cs" />
     <Compile Include="Classes\FormWriters\RankTracker.cs" />
+    <Compile Include="Classes\Models\Cooler.cs" />
+    <Compile Include="Classes\Models\PowerPlant.cs" />
     <Compile Include="Classes\Models\Shield.cs" />
     <Compile Include="Classes\Utility.cs" />
     <Compile Include="Classes\Models\Weapon.cs" />

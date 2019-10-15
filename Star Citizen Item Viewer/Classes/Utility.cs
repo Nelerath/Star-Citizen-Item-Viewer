@@ -17,7 +17,8 @@ namespace Star_Citizen_Item_Viewer.Classes
             int increment = l == 1 ? 255 : 255 / (l - 1);
             for (int i = 0; i < l; i++)
             {
-                Series[i].Color = ColorFromHSV(i * increment, 1, 1);
+                //Series[i].Color = ColorFromHSV(i * increment, 1, 1);
+                Series[i].BorderColor = ColorFromHSV(i * increment, 1, 1);
             }
         }
 

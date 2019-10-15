@@ -13,7 +13,19 @@ namespace Star_Citizen_Item_Viewer.Classes
 {
     public class Weapon : Item
     {
+        #region File Path
+        public static string Filepath
+        {
+            get
+            {
+                return $"{_filePath}\\weapons";
+            }
+        }
+        #endregion
+
         private decimal _firerate { get; set; }
+        [ColumnData("Firerate", 6, true, true, "N2")]
+        [RadarField]
         public decimal Firerate {
             get
             {
@@ -31,13 +43,20 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _firerate = value;
             }
         }
+        [ColumnData("Projectiles per Shot", 7, true, true)]
+        [RadarField]
         public int ProjectilesPerShot { get; set; }
 
         public int MaximumTemperature { get; set; }
+        [ColumnData("Overheat Temperature", 15, true, true)]
+        [RadarField]
         public int OverheatTemperature { get; set; }
         public int RecoveryTemperature { get; set; }
         public int StartCoolingTemperature { get; set; }
+        [ColumnData("Heat per Shot", 13, true, false, "N2")]
         public decimal HeatPerShot { get; set; }
+        [ColumnData("Max Cooling Rate", 14, true, true, "N2")]
+        [RadarField]
         public decimal MaxCoolingRate { get; set; }
         public decimal HeatPerSecond
         {
@@ -68,12 +87,16 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         // Ammo
         public decimal Lifetime { get; set; }
+        [ColumnData("Projectile Velocity", 16, true, true)]
+        [RadarField]
         public int Speed { get; set; }
         private decimal _damageBiochemical { get; set; }
         private decimal _damageDistortion { get; set; }
         private decimal _damageEnergy { get; set; }
         private decimal _damagePhysical { get; set; }
         private decimal _damageThermal { get; set; }
+        [ColumnData("Biochemical Damage", 8, true, true, "N2")]
+        [RadarField]
         public decimal DamageBiochemical
         {
             get
@@ -92,6 +115,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _damageBiochemical = value;
             }
         }
+        [ColumnData("Distortion Damage", 9, true, true, "N2")]
+        [RadarField]
         public decimal DamageDistortion
         {
             get
@@ -110,6 +135,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _damageDistortion = value;
             }
         }
+        [ColumnData("Energy Damage", 10, true, true, "N2")]
+        [RadarField]
         public decimal DamageEnergy
         {
             get
@@ -128,6 +155,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _damageEnergy = value;
             }
         }
+        [ColumnData("Physical Damage", 11, true, true, "N2")]
+        [RadarField]
         public decimal DamagePhysical
         {
             get
@@ -146,6 +175,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _damagePhysical = value;
             }
         }
+        [ColumnData("Thermal Damage", 12, true, true, "N2")]
+        [RadarField]
         public decimal DamageThermal
         {
             get
@@ -164,12 +195,16 @@ namespace Star_Citizen_Item_Viewer.Classes
                 _damageThermal = value;
             }
         }
+        [ColumnData("Damage", 3, true, true, "N2")]
+        [RadarField]
         public decimal DamageTotal {
             get
             {
                 return DamageBiochemical + DamageDistortion + DamageEnergy + DamagePhysical + DamageThermal;
             }
         }
+        [ColumnData("Special Damage", 4, true, true, "N2")]
+        [RadarField]
         public decimal DamageSpecial
         {
             get
@@ -177,11 +212,13 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return DamageTotal * ProjectilesPerShot;
             }
         }
+        [ColumnData("Damage per Second", 5, true, true, "N2")]
+        [RadarField]
         public decimal DamagePerSecond
         {
             get
             {
-                return DamageTotal * Firerate;
+                return DamageSpecial * Firerate;
             }
         }
         public decimal DamagePerSecondSpecial
@@ -191,6 +228,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return DamageSpecial * Firerate;
             }
         }
+        [ColumnData("Max Range", 17, true, true)]
+        [RadarField]
         public int MaxRange
         {
             get
@@ -205,6 +244,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return DamagePerSecond / (PowerBase + PowerDraw);
             }
         }
+        [ColumnData("Damage per Heat", 12, true, true, "N2")]
+        [RadarField]
         public decimal DamagePerHeat
         {
             get
@@ -213,10 +254,20 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
         }
 
+        [ColumnData("Min Spread", 18, true, false, "N3")]
+        [RadarField]
         public decimal MinSpread { get; set; }
+        [ColumnData("Max Spread", 19, true, false, "N3")]
+        [RadarField]
         public decimal MaxSpread { get; set; }
+        [ColumnData("Initial Spread", 20, true, false, "N3")]
+        [RadarField]
         public decimal InitialSpread { get; set; }
+        [ColumnData("Spread Growth", 21, true, false, "N3")]
+        [RadarField]
         public decimal SpreadGrowth { get; set; }
+        [ColumnData("Spread Decay", 22, true, true, "N3")]
+        [RadarField]
         public decimal SpreadDecay { get; set; }
         public decimal SpreadPerSecond
         {
@@ -248,6 +299,8 @@ namespace Star_Citizen_Item_Viewer.Classes
         public decimal HeatAmmoCostMultiplier = 1;
         public decimal HeatHeatMultiplier = 1;
 
+        [ColumnData("3 Second Damage", 100, true, true, "N2", false)]
+        [RadarField]
         public decimal ThreeSecondDamge
         {
             get
@@ -255,6 +308,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return DamageSpecial + (DamageSpecial * Math.Floor(3 / (1 / Firerate)));
             }
         }
+        [ColumnData("10 Second Damage", 100, true, true, "N2", false)]
+        [RadarField]
         public decimal TenSecondDamage
         {
             get
@@ -262,6 +317,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return DamageSpecial + (DamageSpecial * Math.Floor(10 / (1 / Firerate)));
             }
         }
+        [ColumnData("60 Second Damage", 100, true, true, "N2", false)]
+        [RadarField]
         public decimal SixtySecondDamage
         {
             get
@@ -270,75 +327,75 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
         }
 
-        public Weapon(dynamic Json, string File)
+        public Weapon(dynamic json, string file)
         {
-            Id = Json.__ref;
-            Name = string.IsNullOrEmpty((string)Json.name_local) ? File : Json.name_local;
-            Size = Json.size;
-            Filename = File;
+            Id = json.__ref;
+            Name = string.IsNullOrEmpty((string)json.name_local) ? file : json.name_local;
+            Size = json.size;
+            Filename = file;
             Type = Types.Weapon;
 
-            Firerate = Json.Components.SCItemWeaponComponentParams.fire.fireRate / 60M;
-            ProjectilesPerShot = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.pelletCount ?? 1;
-            HeatPerShot = Json.Components.SCItemWeaponComponentParams.fire.heatPerShot;
+            Firerate = json.Components.SCItemWeaponComponentParams.fire.fireRate / 60M;
+            ProjectilesPerShot = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.pelletCount ?? 1;
+            HeatPerShot = json.Components.SCItemWeaponComponentParams.fire.heatPerShot;
             
 
-            PowerBase = Json.Components.EntityComponentPowerConnection.PowerBase;
-            PowerDraw = Json.Components.EntityComponentPowerConnection.PowerDraw;
+            PowerBase = json.Components.EntityComponentPowerConnection.PowerBase;
+            PowerDraw = json.Components.EntityComponentPowerConnection.PowerDraw;
 
-            MinSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.min;
-            MaxSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.max;
-            InitialSpread = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.firstAttack;
-            SpreadGrowth = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.attack;
-            SpreadDecay = Json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.decay;
+            MinSpread = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.min;
+            MaxSpread = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.max;
+            InitialSpread = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.firstAttack;
+            SpreadGrowth = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.attack;
+            SpreadDecay = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.decay;
 
-            Lifetime = Json.ammo.lifetime;
-            Speed = Json.ammo.speed;
-            DamageBiochemical = Json.ammo.bullet.damage.DamageInfo.DamageBiochemical;
-            DamageDistortion = Json.ammo.bullet.damage.DamageInfo.DamageDistortion;
-            DamageEnergy = Json.ammo.bullet.damage.DamageInfo.DamageEnergy;
-            DamagePhysical = Json.ammo.bullet.damage.DamageInfo.DamagePhysical;
-            DamageThermal = Json.ammo.bullet.damage.DamageInfo.DamageThermal;
+            Lifetime = json.ammo.lifetime;
+            Speed = json.ammo.speed;
+            DamageBiochemical = json.ammo.bullet.damage.DamageInfo.DamageBiochemical;
+            DamageDistortion = json.ammo.bullet.damage.DamageInfo.DamageDistortion;
+            DamageEnergy = json.ammo.bullet.damage.DamageInfo.DamageEnergy;
+            DamagePhysical = json.ammo.bullet.damage.DamageInfo.DamagePhysical;
+            DamageThermal = json.ammo.bullet.damage.DamageInfo.DamageThermal;
 
             // Explosive ammo
-            DamageBiochemical += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageBiochemical : 0;
-            DamageDistortion += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageDistortion : 0;
-            DamageEnergy += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageEnergy : 0;
-            DamagePhysical += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
-            DamageThermal += Json.ammo.bullet.detonation != null ? (int)Json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
+            DamageBiochemical += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageBiochemical : 0;
+            DamageDistortion += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageDistortion : 0;
+            DamageEnergy += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageEnergy : 0;
+            DamagePhysical += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
+            DamageThermal += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
 
-            OverclockFirerateMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.fireRateMultiplier;
-            OverclockDamageMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.damageMultiplier;
-            OverclockAmmoCostMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.ammoCostMultiplier;
-            OverclockHeatMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.heatGenerationMultiplier;
+            OverclockFirerateMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.fireRateMultiplier;
+            OverclockDamageMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.damageMultiplier;
+            OverclockAmmoCostMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.ammoCostMultiplier;
+            OverclockHeatMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.heatGenerationMultiplier;
 
-            OverpowerFirerateMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.fireRateMultiplier;
-            OverpowerDamageMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.damageMultiplier;
-            OverpowerAmmoCostMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.ammoCostMultiplier;
-            OverpowerHeatMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.heatGenerationMultiplier;
+            OverpowerFirerateMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.fireRateMultiplier;
+            OverpowerDamageMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.damageMultiplier;
+            OverpowerAmmoCostMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.ammoCostMultiplier;
+            OverpowerHeatMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overpowerStats.heatGenerationMultiplier;
 
-            HeatFirerateMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.fireRateMultiplier;
-            HeatDamageMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.damageMultiplier;
-            HeatAmmoCostMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.ammoCostMultiplier;
-            HeatHeatMultiplier = Json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.heatGenerationMultiplier;
+            HeatFirerateMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.fireRateMultiplier;
+            HeatDamageMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.damageMultiplier;
+            HeatAmmoCostMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.ammoCostMultiplier;
+            HeatHeatMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.heatStats.heatGenerationMultiplier;
 
-            MaximumTemperature = Json.Components.EntityComponentHeatConnection.MaxTemperature;
-            MaxCoolingRate = Json.Components.EntityComponentHeatConnection.MaxCoolingRate;
-            OverheatTemperature = Json.Components.EntityComponentHeatConnection.OverheatTemperature;
-            RecoveryTemperature = Json.Components.EntityComponentHeatConnection.RecoveryTemperature;
-            StartCoolingTemperature = Json.Components.EntityComponentHeatConnection.StartCoolingTemperature;
+            MaximumTemperature = json.Components.EntityComponentHeatConnection.MaxTemperature;
+            MaxCoolingRate = json.Components.EntityComponentHeatConnection.MaxCoolingRate;
+            OverheatTemperature = json.Components.EntityComponentHeatConnection.OverheatTemperature;
+            RecoveryTemperature = json.Components.EntityComponentHeatConnection.RecoveryTemperature;
+            StartCoolingTemperature = json.Components.EntityComponentHeatConnection.StartCoolingTemperature;
         }
 
-        public static Dictionary<string,object> parseAll(string filePath)
+        public static Dictionary<string,object> parseAll()
         {
             ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
-            Parallel.ForEach(Directory.GetFiles(filePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
+            Parallel.ForEach(Directory.GetFiles(Filepath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
             {
                 try
                 {
                     string raw = File.ReadAllText(path).Replace("@", "");
                     dynamic json = JsonConvert.DeserializeObject(raw);
-                    Weapon w = new Weapon(json, path.Replace(filePath + "\\", "").Replace(".json", ""));
+                    Weapon w = new Weapon(json, path.Replace(Filepath + "\\", "").Replace(".json", ""));
                     output.TryAdd(w.Id, w);
                 }
                 catch (Exception)
@@ -351,21 +408,21 @@ namespace Star_Citizen_Item_Viewer.Classes
             return new Dictionary<string, object>(output);
         }
 
-        public static List<Series> CreateLineGraphSeries(List<object> Data, int Ticks, CancellationToken Token)
+        public static List<Series> CreateLineGraphSeries(List<object> data, int ticks, CancellationToken token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = Token };
-                Parallel.ForEach(Data, options, (item, loopState) =>
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = token };
+                Parallel.ForEach(data, options, (item, loopState) =>
                 {
                     Weapon w = (Weapon)item;
                     Series s = w.GetNewLineGraphSeries();
 
-                    decimal[] x = new decimal[Ticks + 1];
-                    decimal[] y = new decimal[Ticks + 1];
+                    decimal[] x = new decimal[ticks + 1];
+                    decimal[] y = new decimal[ticks + 1];
                     decimal firerate = Convert.ToDecimal(item.Get("Firerate"));
-                    for (int i = 0; i <= Ticks; i++)
+                    for (int i = 0; i <= ticks; i++)
                     {
                         x[i] = i * .05M;
                         y[i] = w.DamageSpecial + (w.DamageSpecial * Math.Floor((i * .05M) / (1 / w.Firerate)));

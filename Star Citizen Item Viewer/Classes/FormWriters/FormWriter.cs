@@ -12,10 +12,13 @@ namespace Star_Citizen_Item_Viewer.Classes
 {
     public abstract class FormWriter : RankTracker
     {
-        public FormWriter()
+        private Type _type { get; set; }
+
+        public FormWriter(Type type)
         {
+            _type = type;
             Fields = new List<FieldInfo>();
-            foreach (var property in typeof(Shield).GetProperties())
+            foreach (var property in _type.GetProperties())
             {
                 RadarField data = (RadarField)Attribute.GetCustomAttribute(property, typeof(RadarField));
                 if (data != null)
@@ -25,7 +28,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                     {
                         DisplayFieldName = columnData.DisplayName,
                         DataFieldName = property.Name,
-                        SortDescending = columnData.SortDescending
+                        SortDescending = columnData.SortDescending,
+                        Priority = columnData.Priority
                     });
                 }
             }
@@ -34,13 +38,12 @@ namespace Star_Citizen_Item_Viewer.Classes
         public virtual Column[] GetColumns()
         {
             List<Column> columns = new List<Column>();
-            columns.Add(new Column("Id", "Id", false, visible: false));
-            foreach (var property in typeof(Shield).GetProperties())
+            foreach (var property in _type.GetProperties())
             {
                 ColumnData data = (ColumnData)Attribute.GetCustomAttribute(property, typeof(ColumnData));
                 if (data != null)
                 {
-                    columns.Add(new Column(data.DisplayName, property.Name, data.Sort, data.SortDescending, data.Format, true, data.Priority));
+                    columns.Add(new Column(data.DisplayName, property.Name, data.Sort, data.SortDescending, data.Format, data.Visible, data.Priority));
                 }
             }
             columns.Add(new Column("Score", null, true, true, "N2", false, 101));
@@ -75,7 +78,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Item i = (Item)item;
@@ -94,7 +97,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         public virtual List<CustomLabel> RadarLabels()
         {
             List<CustomLabel> output = new List<CustomLabel>();
-            foreach (var field in Fields)
+            foreach (var field in Fields.OrderBy(x => x.Priority))
             {
                 CustomLabel label = new CustomLabel();
                 label.ForeColor = System.Drawing.Color.White;
@@ -104,7 +107,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             return output;
         }
 
-        public virtual List<string[]> GetDownloadInfo(string filePath)
+        public virtual List<string[]> GetDownloadInfo()
         {
             return new List<string[]>();
         }

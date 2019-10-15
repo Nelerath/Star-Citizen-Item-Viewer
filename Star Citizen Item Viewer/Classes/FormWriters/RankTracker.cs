@@ -13,6 +13,7 @@ namespace Star_Citizen_Item_Viewer.Classes
     {
         protected List<FieldInfo> Fields { get; set; }
         protected ConcurrentDictionary<string, double> TopValues = new ConcurrentDictionary<string, double>();
+        protected ConcurrentDictionary<string, double> BottomValues = new ConcurrentDictionary<string, double>();
 
         public void ClearValues()
         {
@@ -23,7 +24,8 @@ namespace Star_Citizen_Item_Viewer.Classes
         {
             foreach (var fieldInfo in Fields)
             {
-                CompareValues(fieldInfo.DataFieldName, Convert.ToDouble(Utility.GetValue(component, fieldInfo.DataFieldName)), fieldInfo.SortDescending);
+                CompareValues(fieldInfo.DataFieldName, Convert.ToDouble(Utility.GetValue(component, fieldInfo.DataFieldName)), fieldInfo.SortDescending, TopValues);
+                CompareValues(fieldInfo.DataFieldName, Convert.ToDouble(Utility.GetValue(component, fieldInfo.DataFieldName)), !fieldInfo.SortDescending, BottomValues);
             }
         }
 
@@ -38,19 +40,24 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
             else
             {
-                if (value == 0)
+                if (BottomValues[field] == 0)
                     return 100;
                 else
-                    return Math.Floor((TopValues[field] / value) * 100);
+                    return Math.Floor((1-(value / BottomValues[field])) * 100);
+
+                //if (value == 0)
+                //    return 100;
+                //else
+                //    return Math.Floor((TopValues[field] / value) * 100);
             }
         }
 
-        private void CompareValues(string field, double value, bool descending)
+        private void CompareValues(string field, double value, bool descending, ConcurrentDictionary<string, double> dict)
         {
-            if (TopValues.ContainsKey(field))
-                TopValues[field] = descending ? Math.Max(TopValues[field], value) : Math.Min(TopValues[field], value);
+            if (dict.ContainsKey(field))
+                dict[field] = descending ? Math.Max(dict[field], value) : Math.Min(dict[field], value);
             else
-                TopValues[field] = value;
+                dict[field] = value;
         }
     }
 
@@ -59,5 +66,6 @@ namespace Star_Citizen_Item_Viewer.Classes
         public string DataFieldName { get; set; }
         public string DisplayFieldName { get; set; }
         public bool SortDescending { get; set; }
+        public int Priority { get; set; }
     }
 }

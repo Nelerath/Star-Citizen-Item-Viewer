@@ -12,11 +12,13 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
 {
     public class ShieldFormWriter : FormWriter
     {
-        public override List<string[]> GetDownloadInfo(string filePath)
+        public ShieldFormWriter(Type type) : base(type) { }
+
+        public override List<string[]> GetDownloadInfo()
         {
             return new List<string[]>
             {
-                new string[] { "http://starcitizendb.com/api/components/df/Shield", filePath + "\\shields" }
+                new string[] { "http://starcitizendb.com/api/components/df/Shield", Shield.Filepath }
             };
         }
     }

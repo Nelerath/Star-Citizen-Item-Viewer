@@ -11,6 +11,17 @@ namespace Star_Citizen_Item_Viewer.Classes
 {
     public class Armor : Item
     {
+        #region File Path
+        public static string Filepath
+        {
+            get
+            {
+                return $"{_filePath}\\armor";
+            }
+        }
+        #endregion
+
+        [ColumnData("Weight", 3, true, false, "N2")]
         public decimal Weight { get; set; }
 
         public Armor(dynamic Json, string File)
@@ -31,17 +42,17 @@ namespace Star_Citizen_Item_Viewer.Classes
             Weight = Json.Components.SEntityPhysicsControllerParams.PhysType.SEntityDummyPhysicsControllerParams.Mass;
         }
 
-        public static Dictionary<string, object> parseAll(string FilePath)
+        public static Dictionary<string, object> parseAll()
         {
             ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
 
-            Parallel.ForEach(Directory.GetFiles(FilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
+            Parallel.ForEach(Directory.GetFiles(Filepath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
             {
                 try
                 {
                     string raw = File.ReadAllText(path).Replace("@", "");
                     dynamic json = JsonConvert.DeserializeObject(raw);
-                    Armor a = new Armor(json, path.Replace(FilePath + "\\", "").Replace(".json", ""));
+                    Armor a = new Armor(json, path.Replace(Filepath + "\\", "").Replace(".json", ""));
                     output.TryAdd(a.Id, a);
                 }
                 catch (Exception ex)
@@ -54,51 +65,5 @@ namespace Star_Citizen_Item_Viewer.Classes
 
             return new Dictionary<string, object>(output);
         }
-
-        public static Column[] GetColumns()
-        {
-            return new Column[] {
-                new Column("Id", "Id", false, false, "", false),
-                new Column("Name", "Name", false),
-                new Column("Weight", "Weight", true, false, "N2"),
-                new Column("Score", null, true, true, "N2", false),
-            };
-        }
-
-        public static List<string[]> GetDownloadInfo(string FilePath)
-        {
-            return new List<string[]>
-            {
-                new string[] { "http://starcitizendb.com/api/components/df/Char_Armor_Arms", FilePath + "\\armor" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/Char_Armor_Helmet", FilePath + "\\armor" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/Char_Armor_Legs", FilePath + "\\armor" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/Char_Armor_Torso", FilePath + "\\armor" }
-            };
-        }
-
-        public static TreeNode[] BuildTree(object[] Items)
-        {
-            Dictionary<string, TreeNode> tree = new Dictionary<string, TreeNode>();
-            foreach (Item item in Items)
-            {
-                TreeNode n = new TreeNode();
-                n.Name = item.Id;
-                n.Text = item.Name;
-
-                string key = item.Type.ToString("g");
-                if (tree.ContainsKey(key))
-                    tree[key].Nodes.Add(n);
-                else
-                    tree.Add(key, new TreeNode(key, new TreeNode[] { n }));
-            }
-            List<TreeNode> output = new List<TreeNode>();
-            foreach (var key in tree.Keys.OrderBy(x => x))
-            {
-                output.Add(tree[key]);
-            }
-            return output.ToArray();
-        }
-
-        
     }
 }

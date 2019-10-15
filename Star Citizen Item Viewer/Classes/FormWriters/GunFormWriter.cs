@@ -12,7 +12,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
 {
     public class GunFormWriter : FormWriter
     {
-        public GunFormWriter()
+        public GunFormWriter(Type type) : base(type)
         {
             Fields = new List<FieldInfo>
             {
@@ -101,7 +101,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Gun g = (Gun)item;
@@ -136,14 +136,14 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             return output;
         }
 
-        public override List<string[]> GetDownloadInfo(string FilePath)
+        public override List<string[]> GetDownloadInfo()
         {
             return new List<string[]>
             {
-                new string[] { "http://starcitizendb.com/api/components/df/WeaponPersonal", FilePath + "\\guns" }
-                ,new string[] { "http://starcitizendb.com/api/ammo/energy", FilePath + "\\ammo" }
-                ,new string[] { "http://starcitizendb.com/api/ammo/projectile", FilePath + "\\ammo" }
-                ,new string[] { "http://starcitizendb.com/api/components/df/WeaponAttachment", FilePath + "\\attachments" }
+                new string[] { "http://starcitizendb.com/api/components/df/WeaponPersonal", Gun.GunPath }
+                ,new string[] { "http://starcitizendb.com/api/ammo/energy", Gun.AmmoPath }
+                ,new string[] { "http://starcitizendb.com/api/ammo/projectile", Gun.AmmoPath }
+                ,new string[] { "http://starcitizendb.com/api/components/df/WeaponAttachment", Gun.AttachmentPath }
             };
         }
     }

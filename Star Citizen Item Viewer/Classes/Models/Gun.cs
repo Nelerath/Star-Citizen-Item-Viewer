@@ -14,6 +14,30 @@ namespace Star_Citizen_Item_Viewer.Classes
 {
     public class Gun : Item
     {
+        #region File Path
+        public static string GunPath
+        {
+            get
+            {
+                return $"{_filePath}\\guns";
+            }
+        }
+        public static string AmmoPath
+        {
+            get
+            {
+                return $"{_filePath}\\ammo";
+            }
+        }
+        public static string AttachmentPath
+        {
+            get
+            {
+                return $"{_filePath}\\attachments";
+            }
+        }
+        #endregion
+
         public decimal ADSTime { get; set; }
 
         public FireModeStats Rapid { get; set; }
@@ -151,18 +175,18 @@ namespace Star_Citizen_Item_Viewer.Classes
         //    return new Dictionary<string, object>(output);
         //}
 
-        public static Dictionary<string, object> parseAll(string GunFilePath, string AttachmentFilePath, string AmmoFilePath)
+        public static Dictionary<string, object> parseAll()
         {
             ConcurrentDictionary<string, object> magazines = new ConcurrentDictionary<string, object>();
             ConcurrentDictionary<string, object> ammo = new ConcurrentDictionary<string, object>();
 
-            Parallel.ForEach(Directory.GetFiles(AmmoFilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path => 
+            Parallel.ForEach(Directory.GetFiles(AmmoPath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path => 
             {
                 try
                 {
                     string raw = File.ReadAllText(path).Replace("@", "");
                     dynamic json = JsonConvert.DeserializeObject(raw);
-                    Ammo a = new Ammo(json, path.Replace(AmmoFilePath + "\\", "").Replace(".json", ""));
+                    Ammo a = new Ammo(json, path.Replace(AmmoPath + "\\", "").Replace(".json", ""));
                     ammo.TryAdd(a.Id, a);
                 }
                 catch (Exception)
@@ -173,7 +197,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 }
             });
 
-            Parallel.ForEach(Directory.GetFiles(AttachmentFilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path => 
+            Parallel.ForEach(Directory.GetFiles(AttachmentPath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path => 
             {
                 try
                 {
@@ -181,7 +205,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                     dynamic json = JsonConvert.DeserializeObject(raw);
                     if (json.subtype == "Magazine")
                     {
-                        Magazine m = new Magazine(json, path.Replace(AttachmentFilePath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(ammo));
+                        Magazine m = new Magazine(json, path.Replace(AttachmentPath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(ammo));
                         magazines.TryAdd(m.Id, m);
                     }
                 }
@@ -195,13 +219,13 @@ namespace Star_Citizen_Item_Viewer.Classes
 
             ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
 
-            Parallel.ForEach(Directory.GetFiles(GunFilePath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
+            Parallel.ForEach(Directory.GetFiles(GunPath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
             {
                 try
                 {
                     string raw = File.ReadAllText(path).Replace("@", "");
                     dynamic json = JsonConvert.DeserializeObject(raw);
-                    Gun g = new Gun(json, path.Replace(GunFilePath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(magazines));
+                    Gun g = new Gun(json, path.Replace(GunPath + "\\", "").Replace(".json", ""), new Dictionary<string, object>(magazines));
                     output.TryAdd(g.Id, g);
                 }
                 catch (Exception)
@@ -221,7 +245,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Gun g = (Gun)item;
@@ -409,7 +433,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             }
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Gun g = (Gun)item;

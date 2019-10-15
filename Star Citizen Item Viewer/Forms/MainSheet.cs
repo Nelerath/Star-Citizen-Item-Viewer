@@ -17,8 +17,6 @@ namespace Star_Citizen_Item_Viewer
 {
     public partial class MainSheet : Form
     {
-        public static string FilePath = Directory.GetCurrentDirectory();
-
         public static Dictionary<string, object> MasterData = new Dictionary<string, object>();
         private static string LastSelection = "";
         private static string Selected = "";
@@ -30,7 +28,7 @@ namespace Star_Citizen_Item_Viewer
         private static Func<List<object>, int, CancellationToken, List<Series>> LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
         private static List<CustomLabel> RadarLabels = Weapon.RadarLabels();
 
-        private static FormWriter Writer = new WeaponFormWriter();
+        private static FormWriter Writer = new WeaponFormWriter(typeof(Weapon));
 
         public static bool Overclocked = false;
         public static bool Overpowered = false;
@@ -45,29 +43,13 @@ namespace Star_Citizen_Item_Viewer
             dataGridView1.AllowUserToOrderColumns = true;
             progressBar1.Visible = false;
             progressBar1.Maximum = 100;
-
-            if (!Directory.Exists(FilePath + "\\weapons"))
-                Directory.CreateDirectory(FilePath + "\\weapons");
-            if (!Directory.Exists(FilePath + "\\power plants"))
-                Directory.CreateDirectory(FilePath + "\\power plants");
-            if (!Directory.Exists(FilePath + "\\coolers"))
-                Directory.CreateDirectory(FilePath + "\\coolers");
-            if (!Directory.Exists(FilePath + "\\shields"))
-                Directory.CreateDirectory(FilePath + "\\shields");
-            if (!Directory.Exists(FilePath + "\\guns"))
-                Directory.CreateDirectory(FilePath + "\\guns");
-            if (!Directory.Exists(FilePath + "\\attachments"))
-                Directory.CreateDirectory(FilePath + "\\attachments");
-            if (!Directory.Exists(FilePath + "\\ammo"))
-                Directory.CreateDirectory(FilePath + "\\ammo");
-            if (!Directory.Exists(FilePath + "\\armor"))
-                Directory.CreateDirectory(FilePath + "\\armor");
+            Item.SetPath(Directory.GetCurrentDirectory());
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             Columns = Writer.GetColumns();
-            Downloads = Writer.GetDownloadInfo(FilePath);
+            Downloads = Writer.GetDownloadInfo();
             listBox1.SelectedIndex = 0;
         }
 
@@ -212,13 +194,21 @@ namespace Star_Citizen_Item_Viewer
         {
             componentSelect.Nodes.Clear();
             Data.Clear();
+            Task t;
+
+            radarComparison.Enabled = false;
+            damageOutput.Enabled = false;
+            OverclockedCheckbox.Enabled = false;
+            OverpoweredCheckbox.Enabled = false;
+            HotCheckbox.Enabled = false;
+
             switch (Selected)
             {
                 case "Weapons":
-                    Writer = new WeaponFormWriter();
-                    Task.Run(() =>
+                    Writer = new WeaponFormWriter(typeof(Weapon));
+                    t = Task.Run(() =>
                     {
-                        MasterData = Weapon.parseAll(FilePath + "\\weapons");
+                        MasterData = Weapon.parseAll();
                         //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Writer.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
@@ -228,19 +218,23 @@ namespace Star_Citizen_Item_Viewer
                         componentSelect.BeginInvoke(d);
                     });
                     Columns = Writer.GetColumns();
-                    Downloads = Writer.GetDownloadInfo(FilePath);
+                    Downloads = Writer.GetDownloadInfo();
                     LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
                     RadarLabels = Weapon.RadarLabels();
+
+                    t.Wait();
+
+                    radarComparison.Enabled = true;
                     damageOutput.Enabled = true;
                     OverclockedCheckbox.Enabled = true;
                     OverpoweredCheckbox.Enabled = true;
                     HotCheckbox.Enabled = true;
                     break;
                 case "Shields":
-                    Writer = new ShieldFormWriter();
-                    Task.Run(() =>
+                    Writer = new ShieldFormWriter(typeof(Shield));
+                    t = Task.Run(() =>
                     {
-                        MasterData = Shield.parseAll(FilePath + "\\shields");
+                        MasterData = Shield.parseAll();
                         var tree = Writer.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
@@ -249,21 +243,55 @@ namespace Star_Citizen_Item_Viewer
                         componentSelect.BeginInvoke(d);
                     });
                     Columns = Writer.GetColumns();
-                    Downloads = Writer.GetDownloadInfo(FilePath);
+                    Downloads = Writer.GetDownloadInfo();
+
+                    t.Wait();
+
+                    radarComparison.Enabled = true;
                     break;
                 case "Power Plants":
-                    MasterData = new Dictionary<string, object>();
-                    damageOutput.Enabled = false;
+                    Writer = new PowerPlantWriter(typeof(PowerPlant));
+                    t = Task.Run(() =>
+                    {
+                        MasterData = PowerPlant.parseAll();
+                        var tree = Writer.BuildTree(MasterData.Values.ToArray());
+                        MethodInvoker d = delegate ()
+                        {
+                            componentSelect.Nodes.AddRange(tree);
+                        };
+                        componentSelect.BeginInvoke(d);
+                    });
+                    Columns = Writer.GetColumns();
+                    Downloads = Writer.GetDownloadInfo();
+
+                    t.Wait();
+
+                    radarComparison.Enabled = true;
                     break;
                 case "Coolers":
-                    MasterData = new Dictionary<string, object>();
-                    damageOutput.Enabled = false;
+                    Writer = new CoolerWriter(typeof(Cooler));
+                    t = Task.Run(() =>
+                    {
+                        MasterData = Cooler.parseAll();
+                        var tree = Writer.BuildTree(MasterData.Values.ToArray());
+                        MethodInvoker d = delegate ()
+                        {
+                            componentSelect.Nodes.AddRange(tree);
+                        };
+                        componentSelect.BeginInvoke(d);
+                    });
+                    Columns = Writer.GetColumns();
+                    Downloads = Writer.GetDownloadInfo();
+
+                    t.Wait();
+
+                    radarComparison.Enabled = true;
                     break;
                 case "Guns":
-                    Writer = new GunFormWriter();
-                    Task.Run(() =>
+                    Writer = new GunFormWriter(typeof(Gun));
+                    t = Task.Run(() =>
                     {
-                        MasterData = Gun.parseAll(FilePath + "\\guns", FilePath + "\\attachments", FilePath + "\\ammo");
+                        MasterData = Gun.parseAll();
                         //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
                         var tree = Writer.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
@@ -273,31 +301,34 @@ namespace Star_Citizen_Item_Viewer
                         componentSelect.BeginInvoke(d);
                     });
                     Columns = Writer.GetColumns();
-                    Downloads = Writer.GetDownloadInfo(FilePath);
+                    Downloads = Writer.GetDownloadInfo();
                     LineGraphSeriesCreator = Gun.CreateLineGraphSeries;
+
+                    t.Wait();
+
+                    radarComparison.Enabled = true;
                     damageOutput.Enabled = true;
-                    OverclockedCheckbox.Enabled = false;
-                    OverpoweredCheckbox.Enabled = false;
-                    HotCheckbox.Enabled = false;
                     break;
                 case "Armor":
-                    Task.Run(() =>
+                    Writer = new ArmorWriter(typeof(Armor));
+                    t = Task.Run(() =>
                     {
-                        MasterData = Armor.parseAll(FilePath + "\\Armor");
+                        MasterData = Armor.parseAll();
                         //Task.Run(() => { Utility.AssignColors(MasterData.Values.ToList()); });
-                        var tree = Armor.BuildTree(MasterData.Values.ToArray());
+                        var tree = Writer.BuildTree(MasterData.Values.ToArray());
                         MethodInvoker d = delegate ()
                         {
                             componentSelect.Nodes.AddRange(tree);
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Armor.GetColumns();
-                    Downloads = Armor.GetDownloadInfo(FilePath);
-                    damageOutput.Enabled = false;
-                    OverclockedCheckbox.Enabled = false;
-                    OverpoweredCheckbox.Enabled = false;
-                    HotCheckbox.Enabled = false;
+                    Columns = Writer.GetColumns();
+                    Downloads = Writer.GetDownloadInfo();
+
+                    t.Wait();
+
+                    // Nothing to really see yet..
+                    //radarComparison.Enabled = true;
                     break;
             }
 
@@ -337,26 +368,6 @@ namespace Star_Citizen_Item_Viewer
             });
             MethodInvoker d = delegate () { progressBar1.PerformStep(); };
             this.BeginInvoke(d);
-
-            //List<Task> tasks = new List<Task>();
-            //foreach (var item in rawUrls.Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries))
-            //{
-            //    tasks.Add(Task.Run(() =>
-            //    {
-            //        using (WebClient web = new WebClient())
-            //        {
-            //            int i = item.IndexOf("href=\"") + 6;
-            //            string url = item.Substring(i, item.IndexOf('"', i + 1) - i);
-            //            string json = web.DownloadString("http://starcitizendb.com" + url);
-            //            using (StreamWriter writer = File.CreateText(FilePath + "\\" + url.Split(new char[] { '/' }).Last()))
-            //            {
-            //                writer.Write(json);
-            //            }
-            //        }
-            //
-            //    }));
-            //}
-            //Task.WaitAll(tasks.ToArray());
         }
 
         private void AddRow(object data)
