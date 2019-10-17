@@ -214,7 +214,7 @@ namespace Star_Citizen_Item_Viewer
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Writer.GetColumns();
+                    Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
                     LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
                     RadarLabels = Weapon.RadarLabels();
@@ -239,7 +239,7 @@ namespace Star_Citizen_Item_Viewer
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Writer.GetColumns();
+                    Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
 
                     t.Wait();
@@ -258,7 +258,7 @@ namespace Star_Citizen_Item_Viewer
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Writer.GetColumns();
+                    Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
 
                     t.Wait();
@@ -277,7 +277,7 @@ namespace Star_Citizen_Item_Viewer
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Writer.GetColumns();
+                    Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
 
                     t.Wait();
@@ -297,7 +297,7 @@ namespace Star_Citizen_Item_Viewer
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Writer.GetColumns();
+                    Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
                     LineGraphSeriesCreator = Gun.CreateLineGraphSeries;
 
@@ -319,7 +319,7 @@ namespace Star_Citizen_Item_Viewer
                         };
                         componentSelect.BeginInvoke(d);
                     });
-                    Columns = Writer.GetColumns();
+                    Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
 
                     t.Wait();
@@ -373,33 +373,22 @@ namespace Star_Citizen_Item_Viewer
             DataGridViewRow dataRow = new DataGridViewRow();
             dataRow = dataGridView1.Rows[dataGridView1.Rows.Count - 1];
             dataRow.ReadOnly = true;
-            decimal score = 0M;
-            int scoreColumn = dataGridView1.Columns.IndexOf("Score");
 
             Dictionary<string, decimal> scoreMultipliers = new Dictionary<string, decimal>();
             scoreMultipliers.DefaultIfEmpty(new KeyValuePair<string, decimal>("default", 0));
             if (richTextBox1.Text.Length > 0)
             {
-                foreach (var valueSet in richTextBox1.Text.Split(','))
-                {
-                    string[] values = valueSet.Split('=');
-                    scoreMultipliers.Add(values[0].ToLower(), Convert.ToDecimal(values[1]));
-                }
-                dataGridView1.Columns[scoreColumn].Visible = true;
+                Item comp = (Item)data;
+                comp.SetScore(richTextBox1.Text, Writer.Columns);
+                dataGridView1.Columns[dataGridView1.Columns.IndexOf("Score")].Visible = true;
             }
 
 
             foreach (var col in Columns)
             {
                 int x = dataGridView1.Columns.IndexOf(col.Name);
-                dataRow.Cells[x].Value = data.Get(col.DataName);
-                decimal scoreMultiplier;
-                if (scoreMultipliers.TryGetValue(col.Name.ToLower(), out scoreMultiplier))
-                {
-                    score += scoreMultiplier * Convert.ToDecimal(dataRow.Cells[dataGridView1.Columns.IndexOf(col.Name)].Value);
-                }
+                dataRow.Cells[x].Value = data.Get(col.DataFieldName);
             }
-            dataRow.Cells[scoreColumn].Value = score;
 
             dataGridView1.AutoResizeColumns();
         }
@@ -415,13 +404,17 @@ namespace Star_Citizen_Item_Viewer
                     break;
                 }
             }
-
-            Recolor();
             dataGridView1.AutoResizeColumns();
         }
 
         private void Recolor()
         {
+            Writer.ClearValues();
+            foreach (var comp in Data)
+            {
+                Writer.TrackValues(comp);
+            }
+
             foreach (var col in Columns)
             {
                 int i = dataGridView1.Columns.IndexOf(col.Name);
@@ -431,13 +424,7 @@ namespace Star_Citizen_Item_Viewer
                 {
                     foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        values.Add(row.Cells[i].Value);
-                    }
-
-                    values = values.Distinct().OrderBy(x => Convert.ToDecimal(x)).ToList();
-                    foreach (DataGridViewRow row in dataGridView1.Rows)
-                    {
-                        row.Cells[i].Style.BackColor = GetColor(values.IndexOf(row.Cells[i].Value), values.Count, (bool)col.Invert);
+                        row.Cells[i].Style.BackColor = Writer.GetColor(col.DataFieldName, Convert.ToDouble(row.Cells[i].Value), col.SortDescending);
                     }
                 }
             }
@@ -471,22 +458,13 @@ namespace Star_Citizen_Item_Viewer
     {
         public string Name { get; set; }
         public bool Sort { get; set; }
-        public bool Invert { get; set; }
+        public bool SortDescending { get; set; }
         public string Format { get; set; }
         public bool Visible { get; set; }
-        public string DataName { get; set; }
+        public string DataFieldName { get; set; }
         public int Priority { get; set; }
 
-        public Column(string name, string dataName, bool sort, bool sortDescending = false, string format = "", bool visible = true, int priority = 100)
-        {
-            Name = name;
-            DataName = dataName;
-            Sort = sort;
-            Invert = sortDescending;
-            Format = format;
-            Visible = visible;
-            Priority = priority;
-        }
+        public bool RadarField { get; set; }
     }
 
     public static class Extensions

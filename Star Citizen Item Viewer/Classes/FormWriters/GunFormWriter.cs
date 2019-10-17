@@ -110,15 +110,18 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
                 {
                     Gun g = (Gun)item;
                     Series s = g.GetNewRadarGraphSeries();
-                    foreach (var fieldInfo in Fields)
+                    foreach (var col in Columns)
                     {
-                        string[] fieldPath = fieldInfo.DataFieldName.Split('.');
-                        if (fieldPath.Count() > 1)
+                        if (col.RadarField)
                         {
-                            s.Points.Add(new DataPoint(0, GetRank(fieldInfo.DataFieldName, Convert.ToDouble(Utility.GetValue(g, fieldInfo.DataFieldName)), fieldInfo.SortDescending)));
+                            string[] fieldPath = col.DataFieldName.Split('.');
+                            if (fieldPath.Count() > 1)
+                            {
+                                s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, Convert.ToDouble(Utility.GetValue(g, col.DataFieldName)), col.SortDescending)));
+                            }
+                            else
+                                s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, Convert.ToDouble(Utility.GetValue(g, col.DataFieldName)), col.SortDescending)));
                         }
-                        else
-                            s.Points.Add(new DataPoint(0, GetRank(fieldInfo.DataFieldName, Convert.ToDouble(Utility.GetValue(g, fieldInfo.DataFieldName)), fieldInfo.SortDescending)));
                     }
                     list.Enqueue(s);
                 });

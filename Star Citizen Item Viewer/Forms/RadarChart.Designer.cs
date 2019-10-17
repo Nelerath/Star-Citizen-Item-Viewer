@@ -44,7 +44,8 @@
             chartArea1.AxisY.LabelStyle.Enabled = false;
             chartArea1.AxisY.MajorGrid.Enabled = false;
             chartArea1.AxisY.MajorTickMark.Enabled = false;
-            chartArea1.AxisY.Maximum = 100D;
+            chartArea1.AxisY.Maximum = 6D;
+            chartArea1.AxisY.Minimum = -6D;
             chartArea1.AxisY2.MajorGrid.Enabled = false;
             chartArea1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             chartArea1.Name = "ChartArea1";

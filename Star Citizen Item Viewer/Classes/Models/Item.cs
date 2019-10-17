@@ -1,6 +1,8 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -57,6 +59,9 @@ namespace Star_Citizen_Item_Viewer.Classes
         public int Size { get; set; }
         public string Filename { get; set; }
 
+        [ColumnData("Score", 101, true, true, "N2", false)]
+        public double Score { get; set; }
+
         public Types Type { get; set; }
         public ItemGrades Grade { get; set; }
         public ItemClassifications Classification { get; set; }
@@ -93,5 +98,22 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         protected static string _filePath { get; set; }
         public static void SetPath(string path) { _filePath = path; }
+
+        public void SetScore(string scoringFields, Column[] columns)
+        {
+            Score = 0;
+            Dictionary<string, string> displayToDataMap = new Dictionary<string, string>();
+            foreach (var col in columns)
+            {
+                if (col.Sort)
+                    displayToDataMap.Add(col.Name, col.DataFieldName);
+            }
+            foreach (var valueSet in scoringFields.Split(','))
+            {
+                string[] values = valueSet.Split('=');
+                if (displayToDataMap.ContainsKey(values[0]))
+                    Score += Convert.ToDouble(Utility.GetValue(this, displayToDataMap[values[0]])) * Convert.ToDouble(values[1]);
+            }
+        }
     }
 }

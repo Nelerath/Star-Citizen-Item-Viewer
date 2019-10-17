@@ -18,53 +18,13 @@ namespace Star_Citizen_Item_Viewer.Classes
         public FormWriter(Type type)
         {
             _type = type;
-            Fields = new List<FieldInfo>();
-            foreach (var property in _type.GetProperties())
-            {
-                GetFieldsRecursive(property, string.Empty);
-            }
-            Fields = Fields.OrderBy(x => x.Priority).ToList();
-        }
 
-        protected virtual void GetFieldsRecursive(PropertyInfo property, string path)
-        {
-            if (property.PropertyType.IsPrimitive || property.PropertyType == typeof(decimal) || property.PropertyType == typeof(string))
-            {
-                if (Attribute.GetCustomAttribute(property, typeof(RadarField)) != null)
-                {
-                    ColumnData columnData = (ColumnData)Attribute.GetCustomAttribute(property, typeof(ColumnData));
-                    if (columnData != null)
-                    {
-                        Fields.Add(new FieldInfo
-                        {
-                            DisplayFieldName = $"{path}{columnData.DisplayName}",
-                            DataFieldName = $"{path.Replace(' ','.')}{property.Name}",
-                            SortDescending = columnData.SortDescending,
-                            Priority = columnData.Priority
-                        });
-                    }
-                }
-            }
-            else if (property.PropertyType.ToString().Split('.')[0] != "System")
-            {
-                foreach (var prop in property.PropertyType.GetProperties())
-                {
-                    GetFieldsRecursive(prop, $"{path}{property.Name} ");
-                }
-            }
-        }
-
-        public virtual Column[] GetColumns()
-        {
             List<Column> columns = new List<Column>();
-
             foreach (var property in _type.GetProperties())
             {
                 columns.AddRange(GetColumnsRecursive(property, string.Empty));
             }
-
-            columns.Add(new Column("Score", null, true, true, "N2", false, 101));
-            return columns.OrderBy(x => x.Priority).ToArray();
+            _columns = columns.OrderBy(x => x.Priority).ToArray();
         }
 
         protected virtual Column[] GetColumnsRecursive(PropertyInfo property, string path)
@@ -75,7 +35,18 @@ namespace Star_Citizen_Item_Viewer.Classes
                 ColumnData data = (ColumnData)Attribute.GetCustomAttribute(property, typeof(ColumnData));
                 if (data != null)
                 {
-                    columns.Add(new Column($"{path}{data.DisplayName}", $"{path.Replace(' ', '.')}{property.Name}", data.Sort, data.SortDescending, data.Format, data.Visible, data.Priority));
+                    columns.Add(new Column
+                    {
+                        Name = $"{path}{data.DisplayName}",
+                        DataFieldName = $"{path.Replace(' ', '.')}{property.Name}",
+                        Sort = data.Sort,
+                        SortDescending = data.SortDescending,
+                        Format = data.Format,
+                        Visible = data.Visible,
+                        Priority = data.Priority,
+
+                        RadarField = (RadarField)Attribute.GetCustomAttribute(property, typeof(RadarField)) != null ? true : false
+                    });
                 }
             }
             else if (property.PropertyType.ToString().Split('.')[0] != "System")
@@ -121,9 +92,10 @@ namespace Star_Citizen_Item_Viewer.Classes
                 {
                     Item i = (Item)item;
                     Series s = i.GetNewRadarGraphSeries();
-                    foreach (var field in Fields)
+                    foreach (var col in Columns)
                     {
-                        s.Points.Add(new DataPoint(0, GetRank(field.DataFieldName, Convert.ToDouble(Utility.GetValue(item, field.DataFieldName)), field.SortDescending)));
+                        if (col.RadarField)
+                            s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, Convert.ToDouble(Utility.GetValue(item, col.DataFieldName)), col.SortDescending)));
                     }
                     list.Enqueue(s);
                 });
@@ -135,12 +107,15 @@ namespace Star_Citizen_Item_Viewer.Classes
         public virtual List<CustomLabel> RadarLabels()
         {
             List<CustomLabel> output = new List<CustomLabel>();
-            foreach (var field in Fields)
+            foreach (var col in Columns)
             {
-                CustomLabel label = new CustomLabel();
-                label.ForeColor = System.Drawing.Color.White;
-                label.Text = field.DisplayFieldName;
-                output.Add(label);
+                if (col.RadarField)
+                {
+                    CustomLabel label = new CustomLabel();
+                    label.ForeColor = System.Drawing.Color.White;
+                    label.Text = col.Name;
+                    output.Add(label);
+                }   
             }
             return output;
         }

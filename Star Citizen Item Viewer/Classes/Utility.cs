@@ -10,18 +10,20 @@ namespace Star_Citizen_Item_Viewer.Classes
 {
     class Utility
     {
-        public static void AssignColors(List<Series> Series)
+        public static Color AssignColors(int i, int count, int alpha)
         {
-            Series.OrderBy(x => x.Name);
-            int l = Series.Count;
-            int increment = l == 1 ? 255 : 255 / (l - 1);
-            for (int i = 0; i < l; i++)
-            {
-                //Series[i].Color = ColorFromHSV(i * increment, 1, 1);
-                Series[i].BorderColor = ColorFromHSV(i * increment, 1, 1, 125);
-                Series[i].LabelForeColor = ColorFromHSV(i * increment, 1, 1, 255);
-                Series[i].MarkerColor = ColorFromHSV(i * increment, 1, 1, 255);
-            }
+            int increment = count == 1 ? 255 : 255 / (count - 1);
+            return ColorFromHSV(i * increment, 1, 1, alpha);
+            //Series.OrderBy(x => x.Name);
+            //int l = Series.Count;
+            //
+            //for (int i = 0; i < count; i++)
+            //{
+            //    //Series[i].Color = ColorFromHSV(i * increment, 1, 1);
+            //    Series[i].BorderColor = ColorFromHSV(i * increment, 1, 1, 125);
+            //    Series[i].LabelForeColor = ColorFromHSV(i * increment, 1, 1, 255);
+            //    Series[i].MarkerColor = ColorFromHSV(i * increment, 1, 1, 255);
+            //}
         }
 
         public static Color ColorFromHSV(double hue, double saturation, double value, int alpha)

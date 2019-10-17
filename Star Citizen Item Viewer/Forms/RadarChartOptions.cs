@@ -43,7 +43,7 @@ namespace Star_Citizen_Item_Viewer.Forms
             var series = Writer.CreateRadarGraphSeries(compareComponents, Source.Token);
             Task.Run(() =>
             {
-                RadarChart view = new RadarChart(series, Writer.RadarLabels());
+                RadarChart view = new RadarChart(series, Writer.RadarLabels(), Writer.ComponentsTracked > 2);
                 view.ShowDialog();
             });
         }

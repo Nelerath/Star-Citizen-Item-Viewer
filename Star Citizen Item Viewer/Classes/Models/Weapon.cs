@@ -244,7 +244,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return DamagePerSecond / (PowerBase + PowerDraw);
             }
         }
-        [ColumnData("Damage per Heat", 12, true, true, "N2")]
+        [ColumnData("Damage per Heat", 12, true, true, "N3")]
         [RadarField]
         public decimal DamagePerHeat
         {

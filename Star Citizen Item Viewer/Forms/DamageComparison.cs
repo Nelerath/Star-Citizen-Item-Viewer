@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Star_Citizen_Item_Viewer.Classes;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -41,9 +43,11 @@ namespace Star_Citizen_Item_Viewer
             MethodInvoker d = delegate ()
             {
                 chart1.Series.Clear();
-                foreach (var s in series)
+                int x = series.Count;
+                for (int i = 0; i < x; i++)
                 {
-                    chart1.Series.Add(s);
+                    series[i].Color = Utility.AssignColors(i, x, 255);
+                    chart1.Series.Add(series[i]);
                 }
             };
             if (this.InvokeRequired)

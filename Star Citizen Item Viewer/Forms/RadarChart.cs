@@ -17,13 +17,46 @@ namespace Star_Citizen_Item_Viewer.Forms
     {
         private static CancellationTokenSource Source = new CancellationTokenSource();
 
-        public RadarChart(List<Series> series, List<CustomLabel> Labels)
+        public RadarChart(List<Series> series, List<CustomLabel> labels, bool stdDev)
         {
             InitializeComponent();
-            Utility.AssignColors(series);
-            foreach (var item in Labels)
+
+            int x = series.Count;
+            for (int i = 0; i < x; i++)
+            {   
+                series[i].BorderColor = Utility.AssignColors(i, x, 125);
+                series[i].LabelForeColor = Utility.AssignColors(i, x, 255);
+                series[i].MarkerColor = Utility.AssignColors(i, x, 255);
+            }
+
+            if (stdDev)
             {
-                Chart.ChartAreas[0].AxisX.CustomLabels.Add(item);
+                Chart.ChartAreas[0].AxisY.Minimum = -5;
+                Chart.ChartAreas[0].AxisY.Maximum = 5;
+
+                Series average = new Series();
+                average.ChartType = SeriesChartType.Radar;
+                average.Color = Color.Transparent;
+                average.BorderColor = Color.White;
+                average.BorderWidth = 2;
+                average.IsVisibleInLegend = false;
+                average.BorderDashStyle = ChartDashStyle.Dash;
+                foreach (var item in labels)
+                {
+                    average.Points.AddXY(0, 0);
+                    Chart.ChartAreas[0].AxisX.CustomLabels.Add(item);
+                }
+                Chart.Series.Add(average);
+            }
+            else
+            {
+                Chart.ChartAreas[0].AxisY.Minimum = 0;
+                Chart.ChartAreas[0].AxisY.Maximum = 100;
+
+                foreach (var item in labels)
+                {
+                    Chart.ChartAreas[0].AxisX.CustomLabels.Add(item);
+                }
             }
 
             foreach (var s in series)
