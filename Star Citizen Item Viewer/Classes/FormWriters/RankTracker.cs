@@ -30,9 +30,14 @@ namespace Star_Citizen_Item_Viewer.Classes
             StandardDeviations.Clear();
             Averages.Clear();
             _tracked = 0;
+
+            foreach (var col in Columns)
+            {
+                col.DataSetContainsField = false;
+            }
         }
 
-        public void TrackValues(object component)
+        public void TrackValues(object component, bool displayedField = false)
         {
             Averages = new ConcurrentDictionary<string, double>();
             StandardDeviations = new ConcurrentDictionary<string, double>();
@@ -40,34 +45,60 @@ namespace Star_Citizen_Item_Viewer.Classes
             {
                 if (col.Sort)
                 {
-                    double val = Convert.ToDouble(Utility.GetValue(component, col.DataFieldName));
-                    if (Values.ContainsKey(col.DataFieldName))
-                        Values[col.DataFieldName].Add(val);
-                    else
-                        Values.TryAdd(col.DataFieldName, new List<double> { val });
+                    object x = Utility.GetValue(component, col.DataFieldName);
+                    if (x != null)
+                    {
+                        double val = Convert.ToDouble(x);
+                        if (val == 0 && !col.AllowZeroes) continue;
 
-                    CompareValues(col.DataFieldName, val, col.SortDescending, TopValues);
-                    CompareValues(col.DataFieldName, val, !col.SortDescending, BottomValues);
+                        if (Values.ContainsKey(col.DataFieldName))
+                            Values[col.DataFieldName].Add(val);
+                        else
+                            Values.TryAdd(col.DataFieldName, new List<double> { val });
+
+                        CompareValues(col.DataFieldName, val, col.SortDescending, TopValues);
+                        CompareValues(col.DataFieldName, val, !col.SortDescending, BottomValues);
+
+                        if (displayedField && val > 0) col.DataSetContainsField = true;
+                    }
                 }
             }
             _tracked++;
         }
 
-        public void CalculateStdDev(string field)
+        public void CalculateStandardDeviations()
         {
-            double avg = Values[field].Average();
-            Averages.TryAdd(field, avg);
-            double var = Values[field].Select(x => Math.Pow(x - avg, 2)).Average();
-            StandardDeviations.TryAdd(field, Math.Pow(var, .5));
+            foreach (var col in Columns)
+            {
+                if (col.Sort)
+                {
+                    double stdDev;
+                    double avg;
+                    if (CalculateStdDev(col.DataFieldName, out stdDev, out avg))
+                    {
+                        StandardDeviations.TryAdd(col.DataFieldName, stdDev);
+                        Averages.TryAdd(col.DataFieldName, avg);
+                    }
+                }
+            }
+        }
+
+        private bool CalculateStdDev(string field, out double stdDev, out double avg)
+        {
+            stdDev = 0;
+            avg = 0;
+            if (!Values.ContainsKey(field) || Values[field].Count == 0 || !Values[field].Any(x => x > 0)) return false;
+
+            double average = Values[field].Average();
+            stdDev = Math.Pow(Values[field].Select(x => Math.Pow(x - average, 2)).Average(), .5);
+            avg = average;
+            return true;
         }
 
         public double GetRank(string field, double value, bool descending)
         {
-            if (Values.First().Value.Count > 2)
+            if (false && Values.First().Value.Count > 2)
             {
-                if (!StandardDeviations.ContainsKey(field))
-                    CalculateStdDev(field);
-
                 if (StandardDeviations[field] == 0)
                     return 0;
 
@@ -107,9 +138,8 @@ namespace Star_Citizen_Item_Viewer.Classes
         public Color GetColor(string field, double value, bool descending)
         {
             if (!StandardDeviations.ContainsKey(field))
-                CalculateStdDev(field);
-
-            if (StandardDeviations[field] == 0)
+                return SystemColors.ControlDarkDark;
+            else if (StandardDeviations[field] == 0)
                 return Color.FromArgb(255, 255, 255);
 
             double x = ((value - Averages[field]) / StandardDeviations[field]);
@@ -119,10 +149,6 @@ namespace Star_Citizen_Item_Viewer.Classes
 
             int y = (int)Math.Min(((decimal)Math.Abs(x) / 6M) * 255M, 255M);
             return x > 0 ? Color.FromArgb(255 - y, 255, 255 - y) : Color.FromArgb(255, 255 - y, 255 - y);
-            int red = x < 0 ? (int)Math.Min(((decimal)Math.Abs(x) / 6M) * 55M, 55M) : 0;
-            int green = x > 0 ? (int)Math.Min(((decimal)Math.Abs(x) / 6M) * 55M, 55M) : 0;
-
-            return Color.FromArgb(red + 200, green + 200, red+200);
         }
     }
 }

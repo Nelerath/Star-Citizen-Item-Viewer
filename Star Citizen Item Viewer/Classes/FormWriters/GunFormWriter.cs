@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -100,7 +101,8 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             return nodes.OrderBy(x => Convert.ToInt16(x.Text)).ToArray();
         }
 
-        public override List<Series> CreateRadarGraphSeries(List<object> data, CancellationToken token)
+        private static decimal TickSeconds = .01M;
+        public override List<Series> CreateLineGraphSeries(List<object> data, int ticks, CancellationToken token)
         {
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
@@ -109,25 +111,162 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
                 Parallel.ForEach(data, options, (item, loopState) =>
                 {
                     Gun g = (Gun)item;
-                    Series s = g.GetNewRadarGraphSeries();
-                    foreach (var col in Columns)
+
+                    decimal x = 0M;
+                    int shotsFired = 1;
+
+                    if (g.Rapid != null)
                     {
-                        if (col.RadarField)
+                        List<decimal> rapidX = new List<decimal>();
+                        List<decimal> rapidY = new List<decimal>();
+                        x = 0;
+                        shotsFired = 1;
+                        rapidX.Add(x);
+                        rapidY.Add(shotsFired * g.DamageTotal);
+                        while (x <= ticks * TickSeconds)
                         {
-                            string[] fieldPath = col.DataFieldName.Split('.');
-                            if (fieldPath.Count() > 1)
+                            x += (1 / g.Rapid.Firerate);
+                            if (x <= ticks * TickSeconds)
                             {
-                                s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, Convert.ToDouble(Utility.GetValue(g, col.DataFieldName)), col.SortDescending)));
+                                shotsFired++;
+                                rapidX.Add(x);
                             }
                             else
-                                s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, Convert.ToDouble(Utility.GetValue(g, col.DataFieldName)), col.SortDescending)));
+                            {
+                                rapidX.Add(ticks * TickSeconds);
+                            }
+                            rapidY.Add(shotsFired * g.DamageTotal);
                         }
+
+                        Series s = g.GetNewLineGraphSeries(g.Name + " Rapid");
+                        s.Points.DataBindXY(rapidX.ToList(), rapidY.ToList());
+                        list.Enqueue(s);
                     }
-                    list.Enqueue(s);
+
+                    if (g.Burst != null)
+                    {
+                        List<decimal> burstX = new List<decimal>();
+                        List<decimal> burstY = new List<decimal>();
+                        x = 0;
+                        shotsFired = 0;
+                        decimal q = 0;
+                        for (int i = 0; i < g.Burst.ShotCount; i++)
+                        {
+                            q = x + (i * (1 / g.Burst.Firerate));
+                            if (q <= ticks * TickSeconds)
+                            {
+                                shotsFired++;
+                                burstX.Add(q);
+                                burstY.Add(shotsFired * g.DamageTotal);
+                            }
+                            else
+                                break;
+                        }
+                        x += g.Burst.BurstCooldown;
+                        while (x <= ticks * TickSeconds)
+                        {
+                            for (int i = 0; i < g.Burst.ShotCount; i++)
+                            {
+                                q = x + (i * (1 / g.Burst.Firerate));
+                                if (q <= ticks * TickSeconds)
+                                {
+                                    shotsFired++;
+                                    burstX.Add(q);
+                                    burstY.Add(shotsFired * g.DamageTotal);
+                                }
+                                else
+                                    break;
+                            }
+                            x += g.Burst.BurstCooldown;
+                        }
+                        burstX.Add(ticks * TickSeconds);
+                        burstY.Add(shotsFired * g.DamageTotal);
+
+                        Series s = g.GetNewLineGraphSeries(g.Name + " Burst");
+                        s.BorderDashStyle = ChartDashStyle.Dash;
+                        s.Points.DataBindXY(burstX.ToList(), burstY.ToList());
+                        list.Enqueue(s);
+                    }
+
+                    if (g.Single != null)
+                    {
+                        List<decimal> singleX = new List<decimal>();
+                        List<decimal> singleY = new List<decimal>();
+                        x = 0;
+                        shotsFired = 1;
+                        singleX.Add(x);
+                        singleY.Add(shotsFired * g.DamageTotal);
+                        while (x <= ticks * TickSeconds)
+                        {
+                            x += (1 / g.Single.Firerate);
+                            if (x <= ticks * TickSeconds)
+                            {
+                                shotsFired++;
+                                singleX.Add(x);
+                            }
+                            else
+                            {
+                                singleX.Add(ticks * TickSeconds);
+                            }
+                            singleY.Add(shotsFired * g.DamageTotal);
+                        }
+
+                        Series s = g.GetNewLineGraphSeries(g.Name + " Single");
+                        s.BorderDashStyle = ChartDashStyle.Dot;
+                        s.Points.DataBindXY(singleX.ToList(), singleY.ToList());
+                        list.Enqueue(s);
+                    }
                 });
             }
             catch (OperationCanceledException) { }
             return new List<Series>(list).OrderBy(x => x.Name).ToList();
+        }
+
+        public override List<Series> DrawKillLines(int ticks)
+        {
+            List<Series> output = new List<Series>();
+            foreach (var bodyPart in new string[] { "Head", "Torso" })
+            {
+                Color color;
+                decimal health = 0;
+                decimal armoredHealth = 0;
+                if (bodyPart == "Head")
+                {
+                    health = 10M / 1.5M;
+                    color = Color.Red;
+                }
+                else
+                {
+                    health = 20M;
+                    color = Color.Yellow;
+                }
+                foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
+                {
+                    switch (armor)
+                    {
+                        case "Light": armoredHealth = health / .8M; break;
+                        case "Medium": armoredHealth = health / .7M; break;
+                        case "Heavy": armoredHealth = health / .6M; break;
+                        default: armoredHealth = health; break;
+                    }
+
+                    decimal[] x = new decimal[2] { 0, ticks * TickSeconds };
+                    decimal[] y = new decimal[2] { armoredHealth, armoredHealth };
+
+                    Series s = new Series(armor + " " + bodyPart);
+                    s.ChartType = SeriesChartType.Line;
+                    s.BorderWidth = 1;
+                    s.MarkerStyle = MarkerStyle.None;
+                    s.BorderDashStyle = ChartDashStyle.Solid;
+                    s.IsValueShownAsLabel = false;
+                    s.IsVisibleInLegend = false;
+                    s.Color = color;
+                    s.Points.DataBindXY(x, y);
+                    output.Add(s);
+                }
+            }
+
+            return output;
         }
 
         public override List<string[]> GetDownloadInfo()

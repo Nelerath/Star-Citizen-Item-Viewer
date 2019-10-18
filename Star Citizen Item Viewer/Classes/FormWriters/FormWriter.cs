@@ -35,6 +35,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 ColumnData data = (ColumnData)Attribute.GetCustomAttribute(property, typeof(ColumnData));
                 if (data != null)
                 {
+                    bool allowZeroes = Attribute.GetCustomAttribute(property, typeof(AllowZeroes)) != null;
                     columns.Add(new Column
                     {
                         Name = $"{path}{data.DisplayName}",
@@ -45,7 +46,8 @@ namespace Star_Citizen_Item_Viewer.Classes
                         Visible = data.Visible,
                         Priority = data.Priority,
 
-                        RadarField = (RadarField)Attribute.GetCustomAttribute(property, typeof(RadarField)) != null ? true : false
+                        RadarField = (RadarField)Attribute.GetCustomAttribute(property, typeof(RadarField)) != null ? true : false,
+                        AllowZeroes = allowZeroes
                     });
                 }
             }
@@ -87,15 +89,22 @@ namespace Star_Citizen_Item_Viewer.Classes
             ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
             try
             {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = Token };
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 1, CancellationToken = Token };
                 Parallel.ForEach(Data, options, (item, loopState) =>
                 {
                     Item i = (Item)item;
                     Series s = i.GetNewRadarGraphSeries();
-                    foreach (var col in Columns)
+                    foreach (var col in Columns.OrderBy(x => x.Priority))
                     {
-                        if (col.RadarField)
-                            s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, Convert.ToDouble(Utility.GetValue(item, col.DataFieldName)), col.SortDescending)));
+                        if (col.RadarField && col.DataSetContainsField)
+                        {
+                            double x = Convert.ToDouble(Utility.GetValue(item, col.DataFieldName));
+                            if (x > 0 || col.AllowZeroes)
+                                s.Points.Add(new DataPoint(0, GetRank(col.DataFieldName, x, col.SortDescending)));
+                            else
+                                s.Points.Add(new DataPoint(0, 0) { IsEmpty = true });
+                        }
+                            
                     }
                     list.Enqueue(s);
                 });
@@ -104,12 +113,22 @@ namespace Star_Citizen_Item_Viewer.Classes
             return new List<Series>(list).OrderBy(x => x.Name).ToList();
         }
 
+        public virtual List<Series> CreateLineGraphSeries(List<object> data, int ticks, CancellationToken token)
+        {
+            return new List<Series>();
+        }
+
+        public virtual List<Series> DrawKillLines(int ticks)
+        {
+            return new List<Series>();
+        }
+
         public virtual List<CustomLabel> RadarLabels()
         {
             List<CustomLabel> output = new List<CustomLabel>();
-            foreach (var col in Columns)
+            foreach (var col in Columns.OrderBy(x => x.Priority))
             {
-                if (col.RadarField)
+                if (col.RadarField && col.DataSetContainsField)
                 {
                     CustomLabel label = new CustomLabel();
                     label.ForeColor = System.Drawing.Color.White;

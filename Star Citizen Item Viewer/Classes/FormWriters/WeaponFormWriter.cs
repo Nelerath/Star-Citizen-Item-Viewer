@@ -14,14 +14,6 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
     {
         public WeaponFormWriter(Type type) : base(type) { }
 
-        public override List<string[]> GetDownloadInfo()
-        {
-            return new List<string[]>
-            {
-                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", Weapon.Filepath }
-            };
-        }
-
         public override TreeNode[] BuildTree(object[] Items)
         {
             Dictionary<string,Dictionary<string,Dictionary<string, List<TreeNode>>>> tree = new Dictionary<string, Dictionary<string, Dictionary<string, List<TreeNode>>>>();
@@ -102,6 +94,47 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
             }
 
             return nodes.OrderBy(x => Convert.ToInt16(x.Text)).ToArray();
+        }
+
+        public override List<Series> CreateLineGraphSeries(List<object> data, int ticks, CancellationToken token)
+        {
+            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
+            try
+            {
+                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 5, CancellationToken = token };
+                Parallel.ForEach(data, options, (item, loopState) =>
+                {
+                    Weapon w = (Weapon)item;
+                    Series s = w.GetNewLineGraphSeries();
+
+                    decimal[] x = new decimal[ticks + 1];
+                    decimal[] y = new decimal[ticks + 1];
+                    decimal firerate = Convert.ToDecimal(item.Get("Firerate"));
+                    for (int i = 0; i <= ticks; i++)
+                    {
+                        x[i] = i * .05M;
+                        y[i] = w.DamageSpecial + (w.DamageSpecial * Math.Floor((i * .05M) / (1 / w.Firerate)));
+                        if (options.CancellationToken.IsCancellationRequested)
+                            break;
+                    }
+
+                    if (options.CancellationToken.IsCancellationRequested)
+                        loopState.Break();
+
+                    s.Points.DataBindXY(x, y);
+                    list.Enqueue(s);
+                });
+            }
+            catch (OperationCanceledException) { }
+            return new List<Series>(list).OrderBy(x => x.Name).ToList();
+        }
+
+        public override List<string[]> GetDownloadInfo()
+        {
+            return new List<string[]>
+            {
+                new string[] { "http://starcitizendb.com/api/components/df/WeaponGun", Weapon.Filepath }
+            };
         }
     }
 }

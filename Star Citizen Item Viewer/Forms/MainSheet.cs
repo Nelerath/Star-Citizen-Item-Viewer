@@ -25,8 +25,6 @@ namespace Star_Citizen_Item_Viewer
 
         private static List<object> Data = new List<object>();
         private static Column[] Columns = new Column[0];
-        private static Func<List<object>, int, CancellationToken, List<Series>> LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
-        private static List<CustomLabel> RadarLabels = Weapon.RadarLabels();
 
         private static FormWriter Writer = new WeaponFormWriter(typeof(Weapon));
 
@@ -98,7 +96,7 @@ namespace Star_Citizen_Item_Viewer
         {
             Task.Run(() =>
             {
-                DamageComparison view = new DamageComparison(Data, LineGraphSeriesCreator);
+                DamageComparison view = new DamageComparison(Data, Writer);
                 view.ShowDialog();
             });
         }
@@ -128,6 +126,9 @@ namespace Star_Citizen_Item_Viewer
                 {
                     Data.Add(MasterData[e.Node.Name]);
                     AddRow(MasterData[e.Node.Name]);
+
+                    if (Data.Count > 1)
+                        Recolor();
                 }
             }
             else
@@ -144,11 +145,11 @@ namespace Star_Citizen_Item_Viewer
                 {
                     Data.RemoveAll(x => x == MasterData[e.Node.Name]);
                     RemoveRow(e.Node.Name);
+
+                    if (Data.Count > 1)
+                        Recolor();
                 }
             }
-
-            if (Data.Count > 1)
-                Recolor();
         }
 
         private void OverclockedCheckbox_CheckedChanged(object sender, EventArgs e)
@@ -216,8 +217,6 @@ namespace Star_Citizen_Item_Viewer
                     });
                     Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
-                    LineGraphSeriesCreator = Weapon.CreateLineGraphSeries;
-                    RadarLabels = Weapon.RadarLabels();
 
                     t.Wait();
 
@@ -299,7 +298,6 @@ namespace Star_Citizen_Item_Viewer
                     });
                     Columns = Writer.Columns;
                     Downloads = Writer.GetDownloadInfo();
-                    LineGraphSeriesCreator = Gun.CreateLineGraphSeries;
 
                     t.Wait();
 
@@ -414,6 +412,7 @@ namespace Star_Citizen_Item_Viewer
             {
                 Writer.TrackValues(comp);
             }
+            Writer.CalculateStandardDeviations();
 
             foreach (var col in Columns)
             {
@@ -465,6 +464,8 @@ namespace Star_Citizen_Item_Viewer
         public int Priority { get; set; }
 
         public bool RadarField { get; set; }
+        public bool DataSetContainsField { get; set; }
+        public bool AllowZeroes { get; set; }
     }
 
     public static class Extensions

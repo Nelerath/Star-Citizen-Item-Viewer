@@ -31,8 +31,8 @@ namespace Star_Citizen_Item_Viewer.Forms
 
             if (stdDev)
             {
-                Chart.ChartAreas[0].AxisY.Minimum = -5;
-                Chart.ChartAreas[0].AxisY.Maximum = 5;
+                Chart.ChartAreas[0].AxisY.Minimum = -3;
+                Chart.ChartAreas[0].AxisY.Maximum = 3;
 
                 Series average = new Series();
                 average.ChartType = SeriesChartType.Radar;

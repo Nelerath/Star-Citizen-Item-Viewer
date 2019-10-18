@@ -79,7 +79,9 @@ namespace Star_Citizen_Item_Viewer.Classes
                     return null;
             }
             else
+            {
                 return obj.GetType().GetProperty(field).GetValue(obj);
+            }
         }
     }
 }

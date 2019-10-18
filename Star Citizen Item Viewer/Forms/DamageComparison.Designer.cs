@@ -36,6 +36,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.ShowLabels = new System.Windows.Forms.Button();
+            this.cycleFiremode = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -72,7 +73,7 @@
             this.chart1.Legends.Add(legend1);
             this.chart1.Location = new System.Drawing.Point(0, 0);
             this.chart1.Name = "chart1";
-            this.chart1.Size = new System.Drawing.Size(749, 450);
+            this.chart1.Size = new System.Drawing.Size(1105, 682);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             // 
@@ -84,7 +85,7 @@
             this.trackBar1.Minimum = 1;
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.trackBar1.Size = new System.Drawing.Size(47, 400);
+            this.trackBar1.Size = new System.Drawing.Size(47, 632);
             this.trackBar1.TabIndex = 1;
             this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.Both;
             this.trackBar1.Value = 1;
@@ -105,7 +106,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.chart1);
-            this.splitContainer1.Size = new System.Drawing.Size(800, 450);
+            this.splitContainer1.Size = new System.Drawing.Size(1156, 682);
             this.splitContainer1.SplitterDistance = 47;
             this.splitContainer1.TabIndex = 2;
             // 
@@ -123,32 +124,49 @@
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.cycleFiremode);
             this.splitContainer2.Panel2.Controls.Add(this.ShowLabels);
-            this.splitContainer2.Size = new System.Drawing.Size(47, 450);
-            this.splitContainer2.SplitterDistance = 400;
+            this.splitContainer2.Size = new System.Drawing.Size(47, 682);
+            this.splitContainer2.SplitterDistance = 632;
             this.splitContainer2.TabIndex = 2;
             // 
             // ShowLabels
             // 
-            this.ShowLabels.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ShowLabels.AutoSize = true;
+            this.ShowLabels.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ShowLabels.Dock = System.Windows.Forms.DockStyle.Top;
             this.ShowLabels.Location = new System.Drawing.Point(0, 0);
             this.ShowLabels.Name = "ShowLabels";
-            this.ShowLabels.Size = new System.Drawing.Size(47, 46);
+            this.ShowLabels.Size = new System.Drawing.Size(47, 23);
             this.ShowLabels.TabIndex = 0;
             this.ShowLabels.Text = "Labels";
             this.ShowLabels.UseVisualStyleBackColor = true;
             this.ShowLabels.Click += new System.EventHandler(this.ShowLabels_Click);
+            // 
+            // cycleFiremode
+            // 
+            this.cycleFiremode.AutoSize = true;
+            this.cycleFiremode.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.cycleFiremode.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.cycleFiremode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cycleFiremode.Location = new System.Drawing.Point(0, 23);
+            this.cycleFiremode.Name = "cycleFiremode";
+            this.cycleFiremode.Size = new System.Drawing.Size(47, 23);
+            this.cycleFiremode.TabIndex = 1;
+            this.cycleFiremode.Text = "Mode";
+            this.cycleFiremode.UseVisualStyleBackColor = true;
+            this.cycleFiremode.Click += new System.EventHandler(this.cycleFiremode_Click);
             // 
             // DamageComparison
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(1156, 682);
             this.Controls.Add(this.splitContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Text = "Damage Output";
             this.Name = "DamageComparison";
+            this.Text = "Damage Output";
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.splitContainer1.Panel1.ResumeLayout(false);
@@ -158,6 +176,7 @@
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
+            this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -171,5 +190,6 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.Button ShowLabels;
+        private System.Windows.Forms.Button cycleFiremode;
     }
 }

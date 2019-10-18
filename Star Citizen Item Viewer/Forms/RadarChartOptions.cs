@@ -40,10 +40,11 @@ namespace Star_Citizen_Item_Viewer.Forms
                 GetSelected(rootNode);
             }
 
+            Writer.CalculateStandardDeviations();
             var series = Writer.CreateRadarGraphSeries(compareComponents, Source.Token);
             Task.Run(() =>
             {
-                RadarChart view = new RadarChart(series, Writer.RadarLabels(), Writer.ComponentsTracked > 2);
+                RadarChart view = new RadarChart(series, Writer.RadarLabels(), false);
                 view.ShowDialog();
             });
         }
@@ -59,7 +60,7 @@ namespace Star_Citizen_Item_Viewer.Forms
             }
             else if (node.Checked)
             {
-                Writer.TrackValues(Data[node.Name]);
+                Writer.TrackValues(Data[node.Name], true);
                 selected.Add(Data[node.Name]);
             }
         }
@@ -75,7 +76,7 @@ namespace Star_Citizen_Item_Viewer.Forms
             }
             else if (node.Checked)
             {
-                Writer.TrackValues(Data[node.Name]);
+                Writer.TrackValues(Data[node.Name], false);
             }
         }
 

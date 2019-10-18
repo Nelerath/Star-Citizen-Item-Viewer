@@ -48,7 +48,7 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         private Magazine Magazine { get; set; }
 
-        [ColumnData("Projectile Velocity", 19, true, true)]
+        [ColumnData("Projectile Velocity", 22, true, true)]
         [RadarField]
         public int Speed
         {
@@ -57,7 +57,7 @@ namespace Star_Citizen_Item_Viewer.Classes
                 return Magazine.Ammo.Speed;
             }
         }
-        [ColumnData("Max Range", 20, true, true, "N2")]
+        [ColumnData("Max Range", 23, true, true, "N2")]
         [RadarField]
         public decimal MaxRange
         {
@@ -87,9 +87,17 @@ namespace Star_Citizen_Item_Viewer.Classes
         public decimal DamageTotal { get { return Magazine.Ammo.DamageTotal; } }
         [ColumnData("Damage Special", 4, true, true, "N2")]
         [RadarField]
-        public decimal? DamageSpecial { get; set; }
+        public decimal DamageSpecial { get; set; }
 
-        [ColumnData("Weight", 21, true, false, "N2")]
+
+        [ColumnData("Magazine Capacity", 10, true, true)]
+        [RadarField]
+        public int MagazineCapacity { get { return Magazine.AmmoCount; } }
+        [ColumnData("Damage per Magazine", 11, true, true, "N2")]
+        [RadarField]
+        public decimal DamagePerMagazine { get { return DamageSpecial > 0 ? MagazineCapacity * DamageSpecial : MagazineCapacity * DamageTotal; } }
+
+        [ColumnData("Weight", 24, true, false, "N2")]
         public decimal Weight { get; set; }
 
         public Gun(dynamic json, string file, Dictionary<string, object> magazines)
@@ -152,10 +160,6 @@ namespace Star_Citizen_Item_Viewer.Classes
             if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams != null)
             {
                 DamageSpecial = json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionFireChargedParams.maxChargeModifier.damageMultiplier * DamageTotal;
-            }
-            else
-            {
-                DamageSpecial = null;
             }
 
             if (json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams != null && json.Components.SCItemWeaponComponentParams.fireActions.SWeaponActionSequenceParams.name == "Burst")
@@ -240,174 +244,6 @@ namespace Star_Citizen_Item_Viewer.Classes
 
             return new Dictionary<string, object>(output);
         }
-
-        private static decimal TickSeconds = .01M;
-        public static List<Series> CreateLineGraphSeries(List<object> data, int ticks, CancellationToken token)
-        {
-            ConcurrentQueue<Series> list = new ConcurrentQueue<Series>();
-            try
-            {
-                ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = token };
-                Parallel.ForEach(data, options, (item, loopState) =>
-                {
-                    Gun g = (Gun)item;
-
-                    decimal x = 0M;
-                    int shotsFired = 1;
-                    
-                    if (g.Rapid != null)
-                    {
-                        List<decimal> rapidX = new List<decimal>();
-                        List<decimal> rapidY = new List<decimal>();
-                        x = 0;
-                        shotsFired = 1;
-                        rapidX.Add(x);
-                        rapidY.Add(shotsFired * g.DamageTotal);
-                        while (x <= ticks * TickSeconds)
-                        {
-                            x += (1 / g.Rapid.Firerate);
-                            if (x <= ticks * TickSeconds)
-                            {
-                                shotsFired++;
-                                rapidX.Add(x);
-                            }
-                            else
-                            {
-                                rapidX.Add(ticks * TickSeconds);
-                            }
-                            rapidY.Add(shotsFired * g.DamageTotal);
-                        }
-
-                        Series s = g.GetNewLineGraphSeries(g.Name + " Rapid");
-                        s.Points.DataBindXY(rapidX.ToList(), rapidY.ToList());
-                        list.Enqueue(s);
-                    }
-
-                    if (g.Burst != null)
-                    {
-                        List<decimal> burstX = new List<decimal>();
-                        List<decimal> burstY = new List<decimal>();
-                        x = 0;
-                        shotsFired = 0;
-                        decimal q = 0;
-                        for (int i = 0; i < g.Burst.ShotCount; i++)
-                        {
-                            q = x + (i * (1 / g.Burst.Firerate));
-                            if (q <= ticks * TickSeconds)
-                            {
-                                shotsFired++;
-                                burstX.Add(q);
-                                burstY.Add(shotsFired * g.DamageTotal);
-                            }
-                            else
-                                break;
-                        }
-                        x += g.Burst.BurstCooldown;
-                        while (x <= ticks * TickSeconds)
-                        {
-                            for (int i = 0; i < g.Burst.ShotCount; i++)
-                            {
-                                q = x + (i * (1 / g.Burst.Firerate));
-                                if (q <= ticks * TickSeconds)
-                                {
-                                    shotsFired++;
-                                    burstX.Add(q);
-                                    burstY.Add(shotsFired * g.DamageTotal);
-                                }
-                                else
-                                    break;
-                            }
-                            x += g.Burst.BurstCooldown;
-                        }
-                        burstX.Add(ticks * TickSeconds);
-                        burstY.Add(shotsFired * g.DamageTotal);
-
-                        Series s = g.GetNewLineGraphSeries(g.Name + " Burst");
-                        s.BorderDashStyle = ChartDashStyle.Dash;
-                        s.Points.DataBindXY(burstX.ToList(), burstY.ToList());
-                        list.Enqueue(s);
-                    }
-
-                    if (g.Single != null)
-                    {
-                        List<decimal> singleX = new List<decimal>();
-                        List<decimal> singleY = new List<decimal>();
-                        x = 0;
-                        shotsFired = 1;
-                        singleX.Add(x);
-                        singleY.Add(shotsFired * g.DamageTotal);
-                        while (x <= ticks * TickSeconds)
-                        {
-                            x += (1 / g.Single.Firerate);
-                            if (x <= ticks * TickSeconds)
-                            {
-                                shotsFired++;
-                                singleX.Add(x);
-                            }
-                            else
-                            {
-                                singleX.Add(ticks * TickSeconds);
-                            }
-                            singleY.Add(shotsFired * g.DamageTotal);
-                        }
-
-                        Series s = g.GetNewLineGraphSeries(g.Name + " Single");
-                        s.BorderDashStyle = ChartDashStyle.Dot;
-                        s.Points.DataBindXY(singleX.ToList(), singleY.ToList());
-                        list.Enqueue(s);
-                    }
-                });
-            }
-            catch (OperationCanceledException) { }
-            return new List<Series>(list).OrderBy(x => x.Name).Concat(DrawKillLines(ticks)).ToList();
-        }
-
-        private static List<Series> DrawKillLines(int ticks)
-        {
-            List<Series> output = new List<Series>();
-            foreach (var bodyPart in new string[] { "Head", "Torso" })
-            {
-                Color color;
-                decimal health = 0;
-                decimal armoredHealth = 0;
-                if (bodyPart == "Head")
-                {
-                    health = 10M / 1.5M;
-                    color = Color.Red;
-                }
-                else
-                {
-                    health = 20M;
-                    color = Color.Yellow;
-                }
-                foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
-                {
-                    switch (armor)
-                    {
-                        case "Light": armoredHealth = health/.8M; break;
-                        case "Medium": armoredHealth = health / .7M; break;
-                        case "Heavy": armoredHealth = health / .6M; break;
-                        default: armoredHealth = health; break;
-                    }
-
-                    decimal[] x = new decimal[2] { 0, ticks * TickSeconds };
-                    decimal[] y = new decimal[2] { armoredHealth, armoredHealth };
-
-                    Series s = new Series(armor + " " + bodyPart);
-                    s.ChartType = SeriesChartType.Line;
-                    s.BorderWidth = 1;
-                    s.MarkerStyle = MarkerStyle.None;
-                    s.BorderDashStyle = ChartDashStyle.Solid;
-                    s.IsValueShownAsLabel = false;
-                    s.IsVisibleInLegend = false;
-                    s.Color = color;
-                    s.Points.DataBindXY(x, y);
-                    output.Add(s);
-                }
-            }
-
-            return output;
-        }
     }
 
     public class BurstFireModeStats : FireModeStats
@@ -422,25 +258,25 @@ namespace Star_Citizen_Item_Viewer.Classes
 
     public class FireModeStats
     {
-        [ColumnData("Firerate", 10, true, true, "N2")]
+        [ColumnData("Firerate", 12, true, true, "N2")]
         [RadarField]
         public decimal Firerate { get; set; }
-        [ColumnData("Min Spread", 14, true, false, "N2")]
+        [ColumnData("Min Spread", 16, true, false, "N2")]
         [RadarField]
         public decimal MinSpread { get; set; }
-        [ColumnData("Max Spread", 15, true, false, "N2")]
+        [ColumnData("Max Spread", 17, true, false, "N2")]
         [RadarField]
         public decimal MaxSpread { get; set; }
-        [ColumnData("Initial Spread", 16, true, false, "N2")]
+        [ColumnData("Initial Spread", 18, true, false, "N2")]
         [RadarField]
         public decimal InitialSpread { get; set; }
-        [ColumnData("Spread Growth", 17, true, false, "N2")]
+        [ColumnData("Spread Growth", 19, true, false, "N2")]
         [RadarField]
         public decimal SpreadGrowth { get; set; }
-        [ColumnData("Spread Decay", 18, true, true, "N2")]
+        [ColumnData("Spread Decay", 20, true, true, "N2")]
         [RadarField]
         public decimal SpreadDecay { get; set; }
-        [ColumnData("Projectiles per Shot", 13, true, true)]
+        [ColumnData("Projectiles per Shot", 15, true, true)]
         [RadarField]
         public int ProjectilesPerShot { get; set; }
 
@@ -451,40 +287,58 @@ namespace Star_Citizen_Item_Viewer.Classes
             get { return _damage * ProjectilesPerShot; }
         }
 
-        [ColumnData("Damage per Second", 11, true, true, "N2")]
+        [ColumnData("Damage per Second", 13, true, true, "N2")]
         [RadarField]
         public decimal DamagePerSecond { get { return Damage * Firerate; } }
 
-        [ColumnData("Average TTK", 12, true, true, "N2")]
+        [ColumnData("Average Head TTK", 15, true, false, "N3")]
         [RadarField]
-        public decimal AverageTTK
+        public decimal AverageHeadTTK
         {
             get
             {
-                decimal[] ttks = new decimal[8];
+                decimal[] ttks = new decimal[4];
                 int i = 0;
-                foreach (var bodyPart in new string[] { "Head", "Torso" })
+                decimal health = 10M / 1.5M;
+                decimal armoredHealth = 0;
+                foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
                 {
-                    decimal health = 0;
-                    decimal armoredHealth = 0;
-                    if (bodyPart == "Head")
-                        health = 10M / 1.5M;
-                    else
-                        health = 20M;
-
-                    foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
+                    switch (armor)
                     {
-                        switch (armor)
-                        {
-                            case "Light": armoredHealth = health / .8M; break;
-                            case "Medium": armoredHealth = health / .7M; break;
-                            case "Heavy": armoredHealth = health / .6M; break;
-                            default: armoredHealth = health; break;
-                        }
-
-                        ttks[i] = (Math.Ceiling(armoredHealth / Damage) - 1) / Firerate;
-                        i++;
+                        case "Light": armoredHealth = health / .8M; break;
+                        case "Medium": armoredHealth = health / .7M; break;
+                        case "Heavy": armoredHealth = health / .6M; break;
+                        default: armoredHealth = health; break;
                     }
+
+                    ttks[i] = (Math.Ceiling(armoredHealth / Damage) - 1) / Firerate;
+                    i++;
+                }
+                return ttks.Average();
+            }
+        }
+        [ColumnData("Average Body TTK", 16, true, false, "N3")]
+        [RadarField]
+        public decimal AverageBodyTTK
+        {
+            get
+            {
+                decimal[] ttks = new decimal[4];
+                int i = 0;
+                decimal health = 20;
+                decimal armoredHealth = 0;
+                foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
+                {
+                    switch (armor)
+                    {
+                        case "Light": armoredHealth = health / .8M; break;
+                        case "Medium": armoredHealth = health / .7M; break;
+                        case "Heavy": armoredHealth = health / .6M; break;
+                        default: armoredHealth = health; break;
+                    }
+
+                    ttks[i] = (Math.Ceiling(armoredHealth / Damage) - 1) / Firerate;
+                    i++;
                 }
                 return ttks.Average();
             }

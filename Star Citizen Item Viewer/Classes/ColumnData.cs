@@ -27,4 +27,5 @@ namespace Star_Citizen_Item_Viewer.Classes
     }
 
     public class RadarField : Attribute { }
+    public class AllowZeroes : Attribute { }
 }
