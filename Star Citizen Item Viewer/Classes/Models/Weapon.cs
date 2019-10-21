@@ -230,13 +230,7 @@ namespace Star_Citizen_Item_Viewer.Classes
         }
         [ColumnData("Max Range", 17, true, true)]
         [RadarField]
-        public int MaxRange
-        {
-            get
-            {
-                return Convert.ToInt32(Speed * Lifetime);
-            }
-        }
+        public int MaxRange { get; set; }
         public decimal DamagePerPower
         {
             get
@@ -349,21 +343,31 @@ namespace Star_Citizen_Item_Viewer.Classes
             SpreadGrowth = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.attack;
             SpreadDecay = json.Components.SCItemWeaponComponentParams.fire.launchParams.SProjectileLauncher.spreadParams.decay;
 
-            Lifetime = json.ammo.lifetime;
-            Speed = json.ammo.speed;
-            DamageBiochemical = json.ammo.bullet.damage.DamageInfo.DamageBiochemical;
-            DamageDistortion = json.ammo.bullet.damage.DamageInfo.DamageDistortion;
-            DamageEnergy = json.ammo.bullet.damage.DamageInfo.DamageEnergy;
-            DamagePhysical = json.ammo.bullet.damage.DamageInfo.DamagePhysical;
-            DamageThermal = json.ammo.bullet.damage.DamageInfo.DamageThermal;
+            if (json.ammo.tachyon != null)
+            {
+                DamageEnergy = json.ammo.derived.damage_total;
+                MaxRange = json.ammo.tachyon.fullDamageRange;
+            }
+            else
+            {
+                Lifetime = json.ammo.lifetime;
+                Speed = json.ammo.speed;
+                MaxRange = Convert.ToInt32(Speed * Lifetime);
 
-            // Explosive ammo
-            DamageBiochemical += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageBiochemical : 0;
-            DamageDistortion += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageDistortion : 0;
-            DamageEnergy += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageEnergy : 0;
-            DamagePhysical += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
-            DamageThermal += json.ammo.bullet.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
+                DamageBiochemical = json.ammo.bullet?.damage.DamageInfo.DamageBiochemical ?? json.ammo.derived.DamageBiochemical_total;
+                DamageDistortion = json.ammo.bullet?.damage.DamageInfo.DamageDistortion ?? json.ammo.derived.DamageDistortion_total;
+                DamageEnergy = json.ammo.bullet?.damage.DamageInfo.DamageEnergy ?? json.ammo.derived.DamageEnergy_total;
+                DamagePhysical = json.ammo.bullet?.damage.DamageInfo.DamagePhysical ?? json.ammo.derived.DamagePhysical_total;
+                DamageThermal = json.ammo.bullet?.damage.DamageInfo.DamageThermal ?? json.ammo.derived.DamageThermal_total;
 
+                // Explosive ammo
+                DamageBiochemical += json.ammo.bullet?.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageBiochemical : 0;
+                DamageDistortion += json.ammo.bullet?.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageDistortion : 0;
+                DamageEnergy += json.ammo.bullet?.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageEnergy : 0;
+                DamagePhysical += json.ammo.bullet?.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamagePhysical : 0;
+                DamageThermal += json.ammo.bullet?.detonation != null ? (int)json.ammo.bullet.detonation.explosion.damage.DamageInfo.DamageThermal : 0;
+            }
+            
             OverclockFirerateMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.fireRateMultiplier;
             OverclockDamageMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.damageMultiplier;
             OverclockAmmoCostMultiplier = json.Components.SCItemWeaponComponentParams.connectionParams.overclockStats.ammoCostMultiplier;
@@ -389,17 +393,20 @@ namespace Star_Citizen_Item_Viewer.Classes
         public static Dictionary<string,object> parseAll()
         {
             ConcurrentDictionary<string, object> output = new ConcurrentDictionary<string, object>();
-            Parallel.ForEach(Directory.GetFiles(Filepath), new ParallelOptions { MaxDegreeOfParallelism = 5 }, path =>
+            Parallel.ForEach(Directory.GetFiles(Filepath), new ParallelOptions { MaxDegreeOfParallelism = 1 }, path =>
             {
+                string raw = File.ReadAllText(path).Replace("@", "");
+                dynamic json = JsonConvert.DeserializeObject(raw);
+                if (json.name_local == "Singe (S2)")
+                    Console.WriteLine(1);
                 try
                 {
-                    string raw = File.ReadAllText(path).Replace("@", "");
-                    dynamic json = JsonConvert.DeserializeObject(raw);
                     Weapon w = new Weapon(json, path.Replace(Filepath + "\\", "").Replace(".json", ""));
                     output.TryAdd(w.Id, w);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine();
                     #if !DEBUG
                     File.Delete(path);
                     #endif

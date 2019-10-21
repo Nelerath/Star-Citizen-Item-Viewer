@@ -299,7 +299,7 @@ namespace Star_Citizen_Item_Viewer.Classes
             {
                 decimal[] ttks = new decimal[4];
                 int i = 0;
-                decimal health = 10M / 1.5M;
+                decimal health = 10M;// / 1.5M;
                 decimal armoredHealth = 0;
                 foreach (var armor in new string[] { "No Armor", "Light", "Medium", "Heavy" })
                 {

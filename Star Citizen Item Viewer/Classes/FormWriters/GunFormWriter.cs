@@ -232,7 +232,7 @@ namespace Star_Citizen_Item_Viewer.Classes.NewFolder1
                 decimal armoredHealth = 0;
                 if (bodyPart == "Head")
                 {
-                    health = 10M / 1.5M;
+                    health = 10M;// / 1.5M;
                     color = Color.Red;
                 }
                 else

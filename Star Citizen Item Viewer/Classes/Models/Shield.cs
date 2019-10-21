@@ -36,27 +36,63 @@ namespace Star_Citizen_Item_Viewer.Classes
         [RadarField]
         public decimal MaxShieldRegen { get; set; }
         public decimal ReallocationRate { get; set; }
+        [ColumnData("Physical Absorption Min", 6, true, true, "N2")]
+        [RadarField]
+        public decimal PhysicalAbsorptionMin { get; set; }
+        [ColumnData("Physical Absorption Max", 7, true, true, "N2")]
+        [RadarField]
+        public decimal PhysicalAbsorptionMax { get; set; }
+        [ColumnData("Energy Absorption Min", 8, true, true, "N2")]
+        [RadarField]
+        public decimal EnergyAbsorptionMin { get; set; }
+        [ColumnData("Energy Absorption Max", 9, true, true, "N2")]
+        [RadarField]
+        public decimal EnergyAbsorptionMax { get; set; }
+        [ColumnData("Distortion Absorption Min", 10, true, true, "N2")]
+        [RadarField]
+        public decimal DistortionAbsorptionMin { get; set; }
+        [ColumnData("Distortion Absorption Max", 11, true, true, "N2")]
+        [RadarField]
+        public decimal DistortionAbsorptionMax { get; set; }
+        [ColumnData("Thermal Absorption Min", 12, true, true, "N2")]
+        [RadarField]
+        public decimal ThermalAbsorptionMin { get; set; }
+        [ColumnData("Thermal Absorption Max", 13, true, true, "N2")]
+        [RadarField]
+        public decimal ThermalAbsorptionMax { get; set; }
+        [ColumnData("Biochemical Absorption Min", 14, true, true, "N2")]
+        [RadarField]
+        public decimal BiochemicalAbsorptionMin { get; set; }
+        [ColumnData("Biochemical Absorption Max", 15, true, true, "N2")]
+        [RadarField]
+        public decimal BiochemicalAbsorptionMax { get; set; }
+        [ColumnData("Stun Absorption Min", 16, true, true, "N2")]
+        [RadarField]
+        public decimal StunAbsorptionMin { get; set; }
+        [ColumnData("Stun Absorption Max", 17, true, true, "N2")]
+        [RadarField]
+        public decimal StunAbsorptionMax { get; set; }
 
-        [ColumnData("Hardening Cooldown", 8, true, false, "N2")]
+        [ColumnData("Hardening Cooldown", 19, true, false, "N2")]
         public decimal Cooldown { get; set; }
-        [ColumnData("Hardening Duration", 7, true, true, "N2")]
+        [ColumnData("Hardening Duration", 18, true, true, "N2")]
         public decimal Duration { get; set; }
-        [ColumnData("Hardening Factor", 9, true, true, "N2")]
+        [ColumnData("Hardening Factor", 20, true, true, "N2")]
         public decimal Factor { get; set; }
 
-        [ColumnData("Power Base", 10, true, false, "N2")]
+        [ColumnData("Power Base", 21, true, false, "N2")]
         [RadarField]
         public decimal PowerBase { get; set; }
-        [ColumnData("Power Draw", 11, true, false, "N2")]
+        [ColumnData("Power Draw", 22, true, false, "N2")]
         [RadarField]
         public decimal PowerDraw { get; set; }
-        [ColumnData("Power to EM", 12, true, false, "N2")]
+        [ColumnData("Power to EM", 23, true, false, "N2")]
         [RadarField]
         public decimal PowerToEM { get; set; }
-        [ColumnData("Decay Rate of EM", 14, true, true, "N2")]
+        [ColumnData("Decay Rate of EM", 25, true, true, "N2")]
         [RadarField]
         public decimal DecayRateOfEM { get; set; }
-        [ColumnData("EM Signature", 13, true, false, "N2")]
+        [ColumnData("EM Signature", 24, true, false, "N2")]
         [RadarField]
         public decimal EM
         {
@@ -65,16 +101,16 @@ namespace Star_Citizen_Item_Viewer.Classes
 
         public decimal ThermalEnergyBase { get; set; }
         public decimal ThermalEnergyDraw { get; set; }
-        [ColumnData("Temperature to IR", 15, true, false, "N2")]
+        [ColumnData("Temperature to IR", 26, true, false, "N2")]
         [RadarField]
         public decimal TemperatureToIR { get; set; }
-        [ColumnData("Max Cooling Rate", 16, true, true, "N2")]
+        [ColumnData("Max Cooling Rate", 27, true, true, "N2")]
         [RadarField]
         public decimal MaxCoolingRate { get; set; }
 
 
 
-        [ColumnData("Lifetime Hours", 17, true, true, "N2")]
+        [ColumnData("Lifetime Hours", 28, true, true, "N2")]
         [RadarField]
         public decimal MaxLifetimeHours { get; set; }
 
@@ -93,6 +129,20 @@ namespace Star_Citizen_Item_Viewer.Classes
             MaxShieldHealth = json.Components.SCItemShieldGeneratorParams.MaxShieldHealth;
             MaxShieldRegen = json.Components.SCItemShieldGeneratorParams.MaxShieldRegen;
             ReallocationRate = json.Components.SCItemShieldGeneratorParams.ReallocationRate;
+
+            // everyone involved should be ashamed
+            PhysicalAbsorptionMin = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[0].Min;
+            PhysicalAbsorptionMax = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[0].Max;
+            EnergyAbsorptionMin = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[1].Min;
+            EnergyAbsorptionMax = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[1].Max;
+            DistortionAbsorptionMin = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[2].Min;
+            DistortionAbsorptionMax = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[2].Max;
+            ThermalAbsorptionMin  = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[3].Min;
+            ThermalAbsorptionMax = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[3].Max;
+            BiochemicalAbsorptionMin = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[4].Min;
+            BiochemicalAbsorptionMax = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[4].Max;
+            StunAbsorptionMin  = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[5].Min;
+            StunAbsorptionMax = json.Components.SCItemShieldGeneratorParams.ShieldAbsorption.SShieldAbsorption[5].Max;
 
             Cooldown = json.Components.SCItemShieldGeneratorParams.ShieldHardening.Cooldown;
             Duration = json.Components.SCItemShieldGeneratorParams.ShieldHardening.Duration;
